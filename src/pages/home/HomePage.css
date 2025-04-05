@@ -1,0 +1,154 @@
+.home-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color, #ddd); /* Use your theme variable */
+}
+
+.search-box {
+  flex-grow: 1;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--input-bg, #fff);
+  color: var(--text-color, #333);
+}
+
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primary-color, #007bff);
+  background-color: transparent;
+  color: var(--primary-color, #007bff);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tag-button.active,
+.tag-button:hover {
+  background-color: var(--primary-color, #007bff);
+  color: white;
+}
+
+.experiments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem; /* Increased gap */
+}
+
+/* --- Styling for the card and hover preview --- */
+
+/* Wrapper handles hover transform */
+.experiment-card-wrapper {
+  position: relative;
+  border-radius: 8px; /* Optional: Can define radius here or on card */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.experiment-card-wrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* The Card element itself (Link) */
+.experiment-card {
+  display: block; /* Or flex, depending on content flow */
+  position: relative; /* Stacking context */
+  text-decoration: none;
+  color: var(--text-color, #333);
+
+  /* --- Update Base Background for Hue Rotation --- */
+  background: linear-gradient(
+    145deg,
+    #a0c0d0, /* Light cyan/blueish highlight */
+    #7080a0, /* Desaturated blue/purple mid-tone */
+    #506080, /* Darker desaturated base */
+    #7080a0, /* Mid-tone */
+    #90b0c0  /* Secondary highlight */
+  );
+  /* --- Or try a solid color like: background-color: #778899; */ /* LightSlateGray */
+
+  /* Padding creates the border thickness */
+  padding: 5px; /* Adjust thickness */
+  border-radius: 8px; /* Outer shape radius */
+
+  /* Apply filter */
+  filter: url(#jagged-border-filter);
+
+  /* Allow distorted edges to show */
+  overflow: visible;
+
+  /* Ensure height calculation works */
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* New Inner Wrapper for the actual content */
+.card-content-wrapper {
+  background-color: var(--card-background, white);
+  border-radius: 5px; /* Inner radius */
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* Include its own border/padding if any */
+  overflow: hidden; /* Clip content neatly */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* Thumbnail container needs to respect the inner wrapper's clipping */
+.thumbnail-container {
+  width: 100%;
+  /* aspect-ratio: 16 / 10; */
+  background-color: #f0f0f0;
+  position: relative;
+}
+
+/* Adjust text margins if needed due to new structure */
+.card-content-wrapper h3 {
+  margin: 0.75rem 1rem 0.5rem;
+  font-size: 1.1rem;
+}
+
+.card-content-wrapper p {
+  margin: 0 1rem 0.75rem;
+  font-size: 0.9rem;
+  color: #555;
+  flex-grow: 1;
+}
+
+.card-content-wrapper .tags {
+  padding: 0 1rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

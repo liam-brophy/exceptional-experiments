@@ -1,0 +1,77 @@
+/* src/shared/components/ExperimentLayout.css */
+
+/* Optional: Reset body margin/padding if needed */
+/* body { margin: 0; padding: 0; overflow: hidden; } */
+
+.experiment-layout-fullscreen {
+  /* Takes up viewport height, position relative allows absolute/fixed children */
+  min-height: 100vh;
+  position: relative;
+  /* Prevent horizontal scrollbars if children slightly exceed */
+  overflow-x: hidden;
+}
+
+.experiment-background-canvas {
+  position: fixed; /* Take out of flow, position relative to viewport */
+  top: 0;
+  left: 0;
+  width: 100vw;  /* Full viewport width */
+  height: 100vh; /* Full viewport height */
+  z-index: 1;    /* Behind header/footer */
+  background-color: #f0f0f0; /* Fallback background */
+  /* Ensure child (Experiment1) can fill it */
+  display: flex; /* Use flex to make child fill */
+}
+
+.experiment-header-overlay {
+  position: fixed; /* Position relative to viewport */
+  top: 0;
+  left: 0;
+  width: 100%;     /* Full width */
+  z-index: 10;   /* On top of the canvas */
+  padding: 1rem 2rem;
+  box-sizing: border-box; /* Include padding in width */
+  /* Optional: subtle background/effect */
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0));
+  /* background-color: rgba(20, 20, 30, 0.5); */ /* Example semi-transparent */
+  /* box-shadow: 0 2px 4px rgba(0,0,0,0.1); */ /* Might look odd on transparent */
+  color: white; /* Ensure text is visible */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Improve readability */
+}
+
+.back-button {
+  display: inline-block;
+  margin-bottom: 0.5rem; /* Adjust spacing */
+  color: #a7c7e7; /* Light blue, adjust for contrast */
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.back-button:hover {
+    color: #ffffff;
+}
+
+
+.experiment-info h1 {
+  margin: 0;
+  font-size: 1.5rem; /* Adjust size */
+}
+
+/* Removed .experiment-container styles */
+
+.experiment-footer-overlay {
+  position: fixed; /* Position relative to viewport */
+  bottom: 0;
+  left: 0;
+  width: 100%;     /* Full width */
+  z-index: 10;   /* On top of the canvas */
+  padding: 0.5rem 2rem; /* Adjust padding */
+  box-sizing: border-box;
+  text-align: center;
+  /* Optional: subtle background/effect */
+  background: linear-gradient(to top, rgba(0,0,0,0.3), rgba(0,0,0,0));
+  /* background-color: rgba(20, 20, 30, 0.5); */
+  color: white; /* Ensure text is visible */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Improve readability */
+  font-size: 0.8rem;
+}
