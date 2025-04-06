@@ -39,21 +39,93 @@
   }
 
   .experiment1-wrapper {
-    /* Fill the container provided by ExperimentLayout (.experiment-background-canvas) */
     width: 100%;
     height: 100%;
-    display: flex; /* Allows canvas-host to potentially grow/shrink if needed */
-    position: relative; /* Establishes a stacking context if needed */
+    overflow: hidden; /* Prevent scrollbars if canvas slightly overlaps */
+    position: relative; /* Needed if you absolutely position children */
+    display: flex; /* Use flexbox */
+    flex-direction: column; /* Stack display area above canvas */
+    background-color: transparent; /* Ensure wrapper itself is transparent if needed */
   }
   
   .canvas-host {
-    /* This div will contain the actual <canvas> element */
+    flex-grow: 1; /* Allow canvas to take remaining space */
+    min-height: 0; /* Prevent canvas from overflowing flex container */
+    /* Add background color *here* if you want the area *behind* the transparent canvas to have a color */
+    /* background-color: #f0f0f0; */
     width: 100%;
     height: 100%;
     overflow: hidden; /* Hide anything spilling out of the canvas */
+    position: absolute; /* Take up the same space as the wrapper */
+    top: 0;
+    left: 0;
+    z-index: 1; /* Behind the text display */
   }
   
   /* Ensure the generated canvas itself doesn't add extra margins/paddings */
   .canvas-host canvas {
     display: block; /* Prevents potential bottom margin */
+  }
+
+  /* Styles for the new typed text display */
+  .typed-display-container {
+    position: absolute; /* Position relative to experiment1-wrapper */
+    bottom: 65%; /* Adjust this percentage to position vertically relative to bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Fine-tune horizontal centering */
+    z-index: 10; /* Ensure it's above the canvas */
+
+    /* Sizing and Spacing */
+    width: auto; /* Let content determine width */
+    max-width: 70%; /* Prevent it from getting too wide and hitting edges */
+    padding: 8px 15px;
+
+    /* Appearance */
+    background-color: rgba(240, 240, 240, 0.85); /* Semi-transparent light background for readability */
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+
+    /* Content Alignment (using flex) */
+    display: flex;
+    align-items: center; /* Vertically align text and button */
+    justify-content: center; /* Center content horizontally *within* the container */
+    gap: 15px; /* Space between text and button */
+    flex-shrink: 0; /* Prevent this container from shrinking */
+  }
+
+  .typed-display-text {
+    margin: 0; /* Remove default paragraph margins */
+    font-family: monospace;
+    font-size: 1.8em; /* Make text prominent */
+    font-weight: 500;
+    color: #222; /* Darker text color */
+    white-space: nowrap; /* Prevent wrapping for short strings initially */
+    overflow: hidden; /* Hide overflow if it gets too long */
+    text-overflow: ellipsis; /* Add ... if text is too long */
+    max-width: 500px; /* Limit text width directly if needed */
+  }
+
+  .clear-button {
+    padding: 5px 10px;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #444;
+    background-color: rgba(220, 220, 220, 0.8);
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Prevent button from shrinking */
+  }
+
+  .clear-button:hover {
+    background-color: rgba(200, 200, 200, 0.9);
+    border-color: #aaa;
+  }
+
+  /* Ensure body/html have height if the wrapper depends on it */
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* Prevent potential scrollbars on body */
   }
