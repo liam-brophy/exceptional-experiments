@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import p5 from 'p5';
-import './Experiment2.css'; // Import the CSS
+import './PixelMirror.css'; // Updated the CSS import to match the renamed file
 
-const Mirror = () => {
+const PixelMirror = () => {
   const sketchContainerRef = useRef(null);
   const p5InstanceRef = useRef(null);
   const captureRef = useRef(null);
@@ -171,4 +171,4 @@ const Mirror = () => {
   );
 };
 
-export default Mirror;
+export default PixelMirror;

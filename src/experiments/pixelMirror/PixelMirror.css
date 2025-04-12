@@ -12,14 +12,15 @@ body, html {
   /* Other options: 'none', 'cell', 'grab', 'grabbing', 'pointer', etc. */
 }
 
-.mirror-fullscreen-wrapper {
+/* Rename CSS classes to match the new experiment name */
+.pixel-mirror-fullscreen-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-/* Container for the p5 Canvas */
-.mirror-canvas-container {
+/* Rename CSS classes to match the new experiment name */
+.pixel-mirror-canvas-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -28,14 +29,15 @@ body, html {
   z-index: 1; /* Behind controls */
 }
 
-.mirror-canvas-container canvas {
+.pixel-mirror-canvas-container canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
 /* --- Updated Overlay for Controls --- */
-.mirror-controls-overlay {
+/* Rename CSS classes to match the new experiment name */
+.pixel-mirror-controls-overlay {
   position: fixed; /* Position relative to the viewport */
   bottom: 20px;    /* Distance from the bottom */
   left: 20px;      /* Distance from the left */
@@ -54,7 +56,7 @@ body, html {
 }
 
 /* Button Styling (no changes needed unless desired) */
-.mirror-controls-overlay button {
+.pixel-mirror-controls-overlay button {
   padding: 10px 20px; /* Slightly larger padding */
   font-size: 1em; /* Adjust size if desired */
   font-weight: 500;
@@ -68,16 +70,16 @@ body, html {
   text-align: center;
 }
 
-.mirror-controls-overlay button:hover {
+.pixel-mirror-controls-overlay button:hover {
   background-color: rgba(255, 255, 255, 0.35);
 }
 
-.mirror-controls-overlay button:active {
+.pixel-mirror-controls-overlay button:active {
   transform: scale(0.95);
 }
 
 /* Style for the button when the effect is ON (aria-pressed="true") */
-.mirror-controls-overlay button[aria-pressed="true"] {
+.pixel-mirror-controls-overlay button[aria-pressed="true"] {
   background-color: rgba(100, 150, 255, 0.8); /* Use the "active" color */
   color: #fff;
   font-weight: bold;
@@ -85,7 +87,7 @@ body, html {
 
 /* Optional: Style using class if you prefer that over aria-pressed selector */
 /*
-.mirror-controls-overlay button.active {
+.pixel-mirror-controls-overlay button.active {
   background-color: rgba(100, 150, 255, 0.8);
   color: #fff;
   font-weight: bold;

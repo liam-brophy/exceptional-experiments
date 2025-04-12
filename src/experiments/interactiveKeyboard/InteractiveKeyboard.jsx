@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import p5 from 'p5';
-import './Experiment1.css'; // CSS for base layout and non-scaled styles
+import './InteractiveKeyboard.css'; // CSS for base layout and non-scaled styles
 
 const Experiment1 = () => {
   const containerRef = useRef(null);

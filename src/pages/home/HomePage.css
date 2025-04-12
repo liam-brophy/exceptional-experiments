@@ -1,7 +1,16 @@
+body, html {
+  height: 100%;
+  margin: 0;
+  overflow-y: auto;
+}
+
 .home-container {
   max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
@@ -151,4 +160,39 @@ header h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+/* Enhanced unique styles for each experiment */
+.experiments-grid .experiment-card-wrapper.experiment-interactive-keyboard {
+  border: 3px solid var(--blue-color, #007bff);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5);
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+}
+
+.experiments-grid .experiment-card-wrapper.experiment-particle-system {
+  border: 3px dashed var(--green-color, #28a745);
+  box-shadow: 0 6px 12px rgba(40, 167, 69, 0.5);
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+}
+
+.experiments-grid .experiment-card-wrapper.experiment-low-poly-map {
+  border: 3px dotted var(--orange-color, #fd7e14);
+  box-shadow: 0 6px 12px rgba(253, 126, 20, 0.5);
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+}
+
+/* Add hover effects for more distinction */
+.experiments-grid .experiment-card-wrapper.experiment-interactive-keyboard:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 123, 255, 0.6);
+}
+
+.experiments-grid .experiment-card-wrapper.experiment-particle-system:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(40, 167, 69, 0.6);
+}
+
+.experiments-grid .experiment-card-wrapper.experiment-low-poly-map:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(253, 126, 20, 0.6);
 }

@@ -1,0 +1,170 @@
+# Interactive Experiments - Project Requirements Document
+
+## 1. Project Overview
+
+### 1.1 Purpose
+"Interactive Experiments" is a showcase platform designed to document and display a collection of frontend animation and interaction experiments. The platform serves as both a portfolio and a learning tool, allowing the creator to maintain a directory of mini applications that demonstrate various frontend techniques and effects.
+
+### 1.2 Project Scope
+The project consists of a main landing page that provides easy navigation to individual experiments. Each experiment is a self-contained interactive demonstration focusing on specific frontend techniques such as animations, physics simulations, or unique user interactions.
+
+### 1.3 Objectives
+- Create a centralized location to document and display frontend experiments.
+- Provide a consistent, user-friendly interface for browsing experiments.
+- Allow filtering and searching of experiments by characteristics.
+- Enable rapid development of new experiments.
+- Showcase technical skills and creative approaches to frontend development.
+
+## 2. Technical Requirements
+
+### 2.1 Technology Stack
+- **Framework**: React with Vite
+- **Languages**: JavaScript/TypeScript, HTML, CSS
+- **Routing**: React Router
+- **Version Control**: Git
+- **Libraries**: Various based on experiment needs (e.g., p5.js, Three.js)
+
+### 2.2 Architecture
+- **Monorepo Structure**: A single codebase containing all experiments and shared components.
+- **Component-Based Design**: Modular components that can be reused across experiments.
+- **Directory Structure**:
+  ```
+  interactive-experiments/
+  ├── src/
+  │   ├── experiments/          # Individual experiment components
+  │   ├── pages/                # Main application pages (home, about)
+  │   └── shared/               # Shared components, hooks, and styles
+  ├── public/                   # Static assets
+  └── scripts/                  # Utility scripts
+  ```
+
+### 2.3 Responsiveness
+- The platform must work on desktop and tablet screens.
+- Experiments should adjust dynamically to different viewport sizes.
+- Core interactivity should remain functional across supported devices.
+
+## 3. User Interface Requirements
+
+### 3.1 Landing Page
+- Thumbnail grid display of all available experiments.
+- Search functionality to filter experiments by name or description.
+- Tag filtering system to find experiments by technique or feature.
+- Consistent card design for each experiment with title, description, and thumbnail.
+
+### 3.2 Experiment Pages
+- Consistent layout with experiment title and description.
+- Navigation to return to the main directory.
+- Full-viewport experiment display area.
+- Optional controls relevant to each experiment.
+
+### 3.3 Visual Design
+- Clean, minimal interface that emphasizes the experiments.
+- Dark mode by default with good contrast ratios.
+- Typography that prioritizes readability.
+- Subtle animations for UI transitions.
+
+## 4. Functional Requirements
+
+### 4.1 Browsing & Navigation
+- Users must be able to browse all experiments from the main landing page.
+- Users must be able to filter experiments by tags and search terms.
+- Users must be able to navigate back to the landing page from any experiment.
+- URL structure must allow direct linking to specific experiments.
+
+### 4.2 Experiment Framework
+- Each experiment must be self-contained within its own module.
+- Experiments must clean up resources when unmounted to prevent memory leaks.
+- Experiments should include appropriate controls for user interaction.
+- Canvas-based experiments must properly resize with their containers.
+
+### 4.3 Tagging System
+- Each experiment must have at least one tag describing its techniques or features.
+- Tags must be filterable on the landing page.
+- Multiple tags can be selected to refine the experiment list.
+
+## 5. Experiment Requirements
+
+### 5.1 General Requirements
+- Each experiment must focus on demonstrating a specific frontend technique.
+- Experiments must include appropriate comments and documentation.
+- Interactions should be intuitive and responsive.
+- Performance must be optimized, especially for animation-heavy experiments.
+- Fallbacks or error messages should be provided for unsupported browsers.
+
+### 5.2 Planned Experiments
+- **Interactive Keyboard Layout**: Characters arranged in keyboard layout with hover effects.
+- **Particle System Generator**: Customizable particle effects system.
+- **[Placeholder for future experiments]**: Additional experiments will be added incrementally.
+
+### 5.3 Experiment Documentation
+Each experiment should include:
+- Clear title and description.
+- List of technologies/techniques used (tags).
+- Representative thumbnail.
+- Brief explanation of the interaction available.
+
+## 6. Development Process
+
+### 6.1 Version Control
+- Git repository with main branch plus feature branches for new experiments.
+- Meaningful commit messages documenting changes.
+- README documentation for setup and contribution.
+
+### 6.2 Experiment Creation
+- Utility script to scaffold new experiments with boilerplate code.
+- Standard metadata format for experiment documentation.
+- Automated process to regenerate the experiment directory when new ones are added.
+
+### 6.3 Testing and QA
+- Manual testing on major browsers (Chrome, Firefox, Safari).
+- Performance testing for animation-heavy experiments.
+- Accessibility check for color contrast and keyboard navigation.
+
+## 7. Deployment and Hosting
+
+### 7.1 Build Process
+- Vite build process to compile and optimize the application.
+- Static site output for easy deployment.
+
+### 7.2 Hosting Options
+- Deploy to GitHub Pages, Netlify, Vercel, or similar static hosting service.
+- Custom domain optional but recommended for portfolio purposes.
+
+## 8. Future Enhancements
+
+### 8.1 Potential Features
+- User comments or feedback mechanism for each experiment.
+- Performance metrics and frame rate display for animation experiments.
+- Code view option to see the implementation of each experiment.
+- Dark/light theme toggle.
+- Export/sharing capabilities for experiment results.
+- Expand to include tutorials or explanations of techniques.
+
+## 9. Success Criteria
+The project will be considered successful when:
+- At least 5 unique experiments are implemented and functional.
+- The landing page successfully filters and displays all experiments.
+- The codebase follows consistent patterns making new additions straightforward.
+- The platform works reliably across major desktop browsers.
+- Load times are optimized and animations run smoothly.
+
+## 10. Timeline and Milestones
+
+### 10.1 Initial Setup
+- Repository configuration.
+- Core application structure.
+- Landing page and routing implementation.
+
+### 10.2 First Experiments
+- Implementation of initial 2-3 experiments.
+- Testing and refinement of experiment structure.
+
+### 10.3 Enhancement Phase
+- Additional experiments added.
+- UI refinements based on usage.
+- Documentation improvement.
+
+### 10.4 Launch and Iteration
+- Public deployment.
+- Continuous addition of new experiments.
+- Collection of feedback for improvements.

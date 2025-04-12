@@ -1,0 +1,93 @@
+/* Base styles for the experiment card */
+.experiment-card-wrapper {
+  position: relative;
+  border-radius: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.experiment-card-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.experiment-card {
+  display: block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  background: linear-gradient(145deg, #a0c0d0, #7080a0, #506080);
+  padding: 5px;
+  border-radius: 8px;
+  overflow: visible;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.card-content-wrapper {
+  background-color: white;
+  border-radius: 5px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhanced unique styles for specific experiments */
+.experiment-interactive-keyboard {
+  box-shadow: 0 8px 16px rgba(0, 123, 255, 0.4);
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  filter: brightness(1.1);
+}
+
+.experiment-particle-system {
+  box-shadow: 0 8px 16px rgba(40, 167, 69, 0.4);
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  filter: contrast(1.2);
+}
+
+.experiment-low-poly-map {
+  box-shadow: 0 8px 16px rgba(253, 126, 20, 0.4);
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  filter: saturate(1.3);
+}
+
+.aspect-ratio {
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.aspect-ratio-inner {
+  width: 1000px;
+  height: 600px;
+  transform-origin: top left;
+  transform: scale(0.3);
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.card-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  line-clamp: 1;
+}
+
+.card-description {
+  font-size: 0.875rem;
+  color: #6c757d;
+  line-clamp: 2;
+  margin-bottom: 1rem;
+}
+
+.card-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
