@@ -1,0 +1,74 @@
+/* Theme override CSS - Explicit styles for light and dark modes */
+
+/* Force light theme styles */
+html[data-theme="light"],
+body[data-theme="light"] {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --background-color: #f5f7fa;
+  --text-color: #333;
+  --text-color-secondary: #666;
+  --card-background: #fff;
+  --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  --border-color: #ddd;
+  --input-bg: #fff;
+  --tag-bg: #f0f0f0;
+  --tag-text: #555;
+  --header-bg: rgba(255, 255, 255, 0.85);
+  
+  /* Force background color on body */
+  background-color: #f5f7fa !important;
+  color: #333 !important;
+}
+
+/* Force dark theme styles */
+html[data-theme="dark"],
+body[data-theme="dark"] {
+  --primary-color: #60a5fa;
+  --secondary-color: #4ade80;
+  --background-color: #121212;
+  --text-color: #e0e0e0;
+  --text-color-secondary: #a0a0a0;
+  --card-background: #1e1e1e;
+  --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  --border-color: #333;
+  --input-bg: #2a2a2a;
+  --tag-bg: #2a2a2a;
+  --tag-text: #bbb;
+  --header-bg: rgba(18, 18, 18, 0.85);
+  
+  /* Force background color on body */
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+/* Additional overrides for Mantine components in dark mode */
+body[data-theme="dark"] .mantine-Paper-root {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+}
+
+body[data-theme="dark"] .mantine-Text-root {
+  color: #e0e0e0 !important;
+}
+
+body[data-theme="dark"] .mantine-Title-root {
+  color: #e0e0e0 !important;
+}
+
+/* Button toggle visibility based on theme */
+body[data-theme="light"] .theme-button .tabler-icon-moon {
+  display: none;
+}
+
+body[data-theme="light"] .theme-button .tabler-icon-sun {
+  display: block;
+}
+
+body[data-theme="dark"] .theme-button .tabler-icon-sun {
+  display: none;
+}
+
+body[data-theme="dark"] .theme-button .tabler-icon-moon {
+  display: block;
+}

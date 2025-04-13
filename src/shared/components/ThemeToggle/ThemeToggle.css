@@ -1,0 +1,61 @@
+.theme-toggle {
+  position: fixed;
+  top: 40px;
+  right: 20px;
+  z-index: 1000;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s, background-color 0.3s;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-color);
+}
+
+/* Icon animations */
+.theme-toggle .sun,
+.theme-toggle .moon {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  position: absolute;
+}
+
+.theme-toggle .sun {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.theme-toggle .moon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Light theme styles (sun visible) */
+[data-theme="light"] .theme-toggle .sun {
+  opacity: 1;
+  transform: scale(1);
+}
+
+[data-theme="light"] .theme-toggle .moon {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+/* Hide default outline but ensure accessibility */
+.theme-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-color);
+}

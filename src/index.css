@@ -1,11 +1,35 @@
+/* Light Mode Theme Variables (default) */
 :root {
   --primary-color: #3498db;
   --secondary-color: #2ecc71;
   --background-color: #f5f7fa;
   --text-color: #333;
+  --text-color-secondary: #666;
   --card-background: #fff;
   --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  --border-color: #ddd;
   --border-radius: 8px;
+  --input-bg: #fff;
+  --tag-bg: #f0f0f0;
+  --tag-text: #555;
+  --header-bg: rgba(255, 255, 255, 0.85);
+  --transition-speed: 0.3s;
+}
+
+/* Dark Mode Theme Variables */
+[data-theme="dark"] {
+  --primary-color: #60a5fa;
+  --secondary-color: #4ade80;
+  --background-color: #121212;
+  --text-color: #e0e0e0;
+  --text-color-secondary: #a0a0a0;
+  --card-background: #1e1e1e;
+  --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  --border-color: #333;
+  --input-bg: #2a2a2a;
+  --tag-bg: #2a2a2a;
+  --tag-text: #bbb;
+  --header-bg: rgba(18, 18, 18, 0.85);
 }
 
 body {
@@ -15,6 +39,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-color);
   color: var(--text-color);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 /* src/pages/home/HomePage.css */
@@ -45,8 +70,9 @@ header h1 {
   width: 100%;
   padding: 0.75rem;
   border-radius: var(--border-radius);
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   font-size: 1rem;
+  background-color: var(--input-bg);
 }
 
 .tag-filters {
@@ -109,7 +135,7 @@ header h1 {
 
 .experiment-card p {
   margin: 0 1rem 1rem;
-  color: #666;
+  color: var(--text-color-secondary);
 }
 
 .tags {
@@ -120,8 +146,9 @@ header h1 {
 }
 
 .tag {
-  background-color: #f0f0f0;
+  background-color: var(--tag-bg);
   border-radius: 20px;
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
+  color: var(--tag-text);
 }

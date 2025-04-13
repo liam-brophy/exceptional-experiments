@@ -1,27 +1,48 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client'; // Use 'react-dom/client' for React 18+
+import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
-import App from './App'; // Your main application component
+import App from './App';
+import { ThemeProvider, useTheme } from './shared/context/ThemeContext';
 
-// 1. Import Mantine core styles - REQUIRED
+// Import CSS files
 import '@mantine/core/styles.css';
+import './index.css'; // Global CSS
+import './theme-override.css'; // Theme override styles
 
-// Optional: You might import other Mantine CSS modules if you use specific components
-// like Notifications or CodeHighlight later
-// import '@mantine/notifications/styles.css';
+// Create a wrapper component that synchronizes themes
+const AppWithMantineTheme = () => {
+  const { theme } = useTheme();
+  
+  // Apply theme to document.documentElement when it changes
+  useEffect(() => {
+    // Set the data-theme attribute on document element
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Also apply theme to body element as an extra measure
+    document.body.setAttribute('data-theme', theme);
+    
+    // Log to confirm the theme is changing
+    console.log('Theme changed to:', theme);
+  }, [theme]);
+  
+  // Update Mantine theme based on custom theme
+  const mantineTheme = {
+    colorScheme: theme, // Use theme from ThemeContext for Mantine
+  };
 
-// Optional: Define a custom theme override object
-const myCustomTheme = {
-  // colorScheme: 'dark', // Force dark mode (or 'light', or 'auto')
-  // primaryColor: 'violet', // Change the primary accent color
-  // fontFamily: 'Verdana, sans-serif',
-  // Add more overrides like default component props, radii, spacing, etc.
-  // See Mantine theming docs: https://mantine.dev/theming/theme-object/
+  return (
+    <MantineProvider
+      theme={mantineTheme}
+      withGlobalStyles
+      withNormalizeCSS
+    >
+      <App />
+    </MantineProvider>
+  );
 };
 
-// Find your root DOM element (usually <div id="root"> in index.html)
+// Find your root DOM element
 const rootElement = document.getElementById('root');
-// Add 'as HTMLElement' if using TypeScript: const rootElement = document.getElementById('root') as HTMLElement;
 
 if (!rootElement) {
   throw new Error("Failed to find the root element");
@@ -31,16 +52,8 @@ const root = ReactDOM.createRoot(rootElement);
 
 root.render(
   <React.StrictMode>
-    {/* 2. Wrap your App with MantineProvider */}
-    <MantineProvider
-      theme={myCustomTheme} // Pass your theme object (optional)
-      withGlobalStyles // Adds Mantine's global styles (recommended)
-      withNormalizeCSS // Adds CSS normalization (recommended)
-    >
-      {/* If using React Router, BrowserRouter usually goes here, INSIDE MantineProvider */}
-      {/* <BrowserRouter> */}
-        <App />
-      {/* </BrowserRouter> */}
-    </MantineProvider>
+    <ThemeProvider>
+      <AppWithMantineTheme />
+    </ThemeProvider>
   </React.StrictMode>
 );

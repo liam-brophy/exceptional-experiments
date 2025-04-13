@@ -9,6 +9,7 @@
   position: relative;
   /* Prevent horizontal scrollbars if children slightly exceed */
   overflow-x: hidden;
+  transition: background-color var(--transition-speed);
 }
 
 .experiment-background-canvas {
@@ -18,7 +19,7 @@
   width: 100vw;  /* Full viewport width */
   height: 100vh; /* Full viewport height */
   z-index: 1;    /* Behind header/footer */
-  background-color: #f0f0f0; /* Fallback background */
+  background-color: var(--background-color); /* Use theme variable */
   /* Ensure child (Experiment1) can fill it */
   display: flex; /* Use flex to make child fill */
 }
@@ -74,4 +75,17 @@
   color: white; /* Ensure text is visible */
   text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Improve readability */
   font-size: 0.8rem;
+}
+
+/* Improved theme compatibility for experiment pages */
+[data-theme="dark"] .experiment-background-canvas {
+  background-color: var(--background-color);
+}
+
+[data-theme="dark"] .back-button {
+  color: #82b1ff;
+}
+
+[data-theme="dark"] .back-button:hover {
+  color: #bbdefb;
 }
