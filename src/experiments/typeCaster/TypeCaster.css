@@ -1,0 +1,48 @@
+.type-caster-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #111;
+  overflow: hidden;
+  cursor: text;
+}
+
+.invisible-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: transparent;
+  outline: none;
+  caret-color: white; /* Only the cursor is visible */
+  caret-shape: block; /* Modern browsers - makes cursor more visible */
+  font-size: 2rem; /* Large cursor */
+  z-index: 10;
+  padding: 0;
+  text-align: center;
+}
+
+.cast-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cast-char {
+  position: absolute;
+  font-size: 6rem; /* Base font size, multiplied in the component */
+  color: white;
+  text-shadow: 0 0 8px rgba(200, 200, 255, 0.8);
+  transition: text-shadow 0.3s;
+  pointer-events: none;
+  font-family: 'Arial', sans-serif;
+  font-weight: 300;
+  user-select: none;
+}

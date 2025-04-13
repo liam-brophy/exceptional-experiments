@@ -3,6 +3,7 @@ import InteractiveKeyboard from './interactiveKeyboard/InteractiveKeyboard';
 import PixelMirror from './pixelMirror/PixelMirror';
 import CharacterSpawner from './characterSpawner/CharacterSpawner';
 import MagicCrayon from './magicCrayon/MagicCrayon';
+import TypeCaster from './typeCaster/TypeCaster';
 
 const experimentList = [
   {
@@ -36,6 +37,14 @@ const experimentList = [
     description: 'Draw and watch the magic happen with this interactive experiment.',
     component: MagicCrayon,
     thumbnail: '/thumbnails/MagicCrayon.png', // Fixed capitalization to match actual filename
+  },
+  {
+    id: 'type-caster',
+    slug: 'type-caster',
+    title: 'Type Caster',
+    description: 'Cast text characters that animate and fall across your screen with physics effects.',
+    component: TypeCaster,
+    thumbnail: '/thumbnails/typeCaster.png', // Fixed to match actual filename (using camelCase)
   },
 ];
 
