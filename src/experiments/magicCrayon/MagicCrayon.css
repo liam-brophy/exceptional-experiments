@@ -14,8 +14,7 @@
   top: 0;
   left: 0;
   overflow: hidden;
-  background-color: #0a141e; /* Dark blue-black gradient */
-  background-image: linear-gradient(to bottom, #0a141e, #121e2a);
+  background-color: rgb(30, 30, 35);
 }
 
 .canvas-container {
@@ -27,101 +26,297 @@
   z-index: 1;
 }
 
-/* Controls with a dark glassy look */
-.controls {
+/* Simplified, clean controls */
+.simple-controls {
   position: absolute;
   top: 20px;
   right: 20px;
-  background-color: rgba(30, 60, 80, 0.7);
+  background-color: rgba(40, 40, 45, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding: 20px;
+  padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 10;
-  width: 200px;
-  color: #e0f7fa;
-  border: 1px solid rgba(100, 200, 255, 0.2);
-}
-
-.controls h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #81d4fa;
-  font-weight: 400;
-  font-size: 18px;
-  text-align: center;
-  letter-spacing: 1px;
+  width: 270px; /* Increased width to accommodate background controls */
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .control-group {
-  margin-bottom: 15px;
+  margin-bottom: 18px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
 }
 
 .control-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-size: 14px;
-  color: #b3e5fc;
+  color: #e0e0e0;
+  font-weight: 400;
 }
 
-.control-group select,
-.control-group input {
-  width: 100%;
-  padding: 8px;
+/* Color picker styling */
+.color-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.color-picker-input {
+  width: 60px;
+  height: 40px;
+  border: none;
   border-radius: 6px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(100, 200, 255, 0.3);
-  color: #e1f5fe;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+  overflow: hidden;
 }
 
-/* Instructions with a subtle glow */
-.instructions {
+/* Remove default color picker appearance in some browsers */
+.color-picker-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.color-picker-input::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+/* Make main brush color picker larger */
+.main-color-picker {
+  width: 60px;
+  height: 40px;
+}
+
+/* Selected color display */
+.selected-color-preview {
+  flex: 1;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Make text readable on any background color */
+.color-hex-value {
+  font-family: monospace;
+  font-size: 13px;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.8);
+  mix-blend-mode: difference;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+/* Recent colors palette */
+.recent-colors-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+/* Color swatch styling (reused for recent colors) */
+.color-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.color-swatch.selected {
+  border-color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+/* Background color type selector */
+.background-type-selector {
+  display: flex;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.background-type-selector button {
+  flex: 1;
+  background: rgba(60, 60, 65, 0.5);
+  color: #e0e0e0;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+
+.background-type-selector button:hover:not(.active) {
+  background: rgba(80, 80, 85, 0.5);
+}
+
+.background-type-selector button.active {
+  background: rgba(120, 120, 220, 0.5);
+  font-weight: 500;
+}
+
+/* Background swatches grid */
+.background-swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 80px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.bg-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 2px solid transparent;
+}
+
+.bg-swatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.bg-swatch.selected {
+  border-color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Custom color picker styling */
+.custom-color-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.color-picker-input {
+  width: 100px;
+  height: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.color-hex-value {
+  font-family: monospace;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+/* Background dropdown styles */
+.background-select {
+  margin-top: 8px;
+}
+
+/* Background color presets */
+.background-presets {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.bg-preset {
+  width: 40px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  flex: 1;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.bg-preset:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Minimalist instructions */
+.simple-instructions {
   position: absolute;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  color: #b2ebf2;
-  background-color: rgba(30, 60, 80, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(40, 40, 45, 0.7);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  padding: 12px 18px;
+  padding: 10px 16px;
   border-radius: 8px;
   text-align: center;
   font-size: 14px;
   z-index: 5;
   pointer-events: none;
-  box-shadow: 0 0 15px rgba(100, 240, 255, 0.2);
-  border: 1px solid rgba(100, 200, 255, 0.15);
-  text-shadow: 0 0 10px rgba(100, 240, 255, 0.4);
-  line-height: 1.6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0.8;
+  line-height: 1.5;
+  transition: opacity 0.5s ease;
 }
 
-/* Styled sliders to match the cool organic theme */
+.simple-instructions:hover {
+  opacity: 0.1;
+}
+
+/* Clean, minimalist sliders */
 input[type="range"] {
   -webkit-appearance: none;
+  appearance: none;
   height: 4px;
-  background: linear-gradient(to right, #00796b, #4fc3f7);
+  background: rgba(200, 200, 200, 0.3);
   border-radius: 2px;
   outline: none;
+  width: 100%;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #80deea;
+  background: white;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #80deea;
+  background: white;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { experiments } from '../../experiments/experimentList';
 import {
@@ -8,12 +8,34 @@ import {
 } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import ExperimentCard from '../../shared/components/ExperimentCard';
+import './HomePage.css';
+
+const NewsTicker = ({ messages }) => {
+  const tickerText = messages.join(' • ');
+  
+  return (
+    <div className="news-ticker-container">
+      <div className="news-ticker-track">
+        {tickerText} • {tickerText} • {tickerText}
+      </div>
+    </div>
+  );
+};
 
 const HomePage = () => {
   const theme = useMantineTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [hoveredExperimentId, setHoveredExperimentId] = useState(null);
+
+  // News ticker messages
+  const tickerMessages = [
+    "🚀 New experiment coming next week! Stay tuned for updates...",
+    "✨ Try the Magic Crayon experiment for a relaxing creative session",
+    "📣 Now supporting keyboard interactions in all experiments",
+    "🔥 Interactive Keyboard demo reached 500 interactions this month",
+    "💡 Suggestion? Submit experiment ideas through the contact form"
+  ];
 
   const allTags = [...new Set(experiments.flatMap(exp => exp.tags || []))].sort();
 
@@ -47,38 +69,43 @@ const HomePage = () => {
   const borderPadding = rem(5); // Reset padding to original value or adjust
 
   return (
-    <Container size="lg" py="xl">
-      {/* Header */}
-      <Stack align="center" mb="xl">
-        <Title order={1} align="center"></Title>
-        <Text size="xl" color="dimmed" align="center">
-            you are years behind my research
-        </Text>
-      </Stack>
+    <>
+      {/* News Ticker */}
+      <NewsTicker messages={tickerMessages} />
+      
+      <Container size="lg" py="xl">
+        {/* Header */}
+        <Stack align="center" mb="xl">
+          <Title order={1} align="center"></Title>
+          <Text size="xl" color="dimmed" align="center">
+              you are years behind my research
+          </Text>
+        </Stack>
 
-      {/* Filters */}
-      <Stack mb="xl" gap="lg">
-         <TextInput placeholder="Search experiments..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={18} stroke={1.5} />} size="md" radius="xl"/>
-         <Chip.Group multiple value={selectedTags} onChange={setSelectedTags}><Group justify="center" gap="xs">{allTags.map(tag => (<Chip key={tag} value={tag} variant="outline" size="sm" radius="sm">{tag}</Chip>))}</Group></Chip.Group>
-      </Stack>
+        {/* Filters */}
+        <Stack mb="xl" gap="lg">
+           <TextInput placeholder="Search experiments..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={18} stroke={1.5} />} size="md" radius="xl"/>
+           <Chip.Group multiple value={selectedTags} onChange={setSelectedTags}><Group justify="center" gap="xs">{allTags.map(tag => (<Chip key={tag} value={tag} variant="outline" size="sm" radius="sm">{tag}</Chip>))}</Group></Chip.Group>
+        </Stack>
 
-      {/* Grid */}
-      <SimpleGrid
-          cols={{ base: 1, sm: 2, lg: 3 }}
-          spacing="xl"
-          verticalSpacing="xl"
-        >
-        {filteredExperiments.map(experiment => (
-          <ExperimentCard
-            key={experiment.id}
-            experiment={experiment}
-            isHovered={hoveredExperimentId === experiment.id}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          />
-        ))}
-      </SimpleGrid>
-    </Container>
+        {/* Grid */}
+        <SimpleGrid
+            cols={{ base: 1, sm: 2, lg: 3 }}
+            spacing="xl"
+            verticalSpacing="xl"
+          >
+          {filteredExperiments.map(experiment => (
+            <ExperimentCard
+              key={experiment.id}
+              experiment={experiment}
+              isHovered={hoveredExperimentId === experiment.id}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            />
+          ))}
+        </SimpleGrid>
+      </Container>
+    </>
   );
 };
 

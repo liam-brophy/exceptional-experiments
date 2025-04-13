@@ -5,19 +5,78 @@ const GRAVITY = 0.98; // Gravity constant
 const ENERGY_LOSS = 0.8; // Bounce elasticity
 const FRICTION = 0.99; // Air resistance
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const EMOJIS = ['😀', '😍', '🚀', '🎉', '🌈', '✨', '💖', '🔥', '🎁', '🎮', '🍕', '🍦', '🦄', '🐱', '🐶', '🌟', '🌺', '🏆', '🎯', '🎨', '🎭', '🎼', '📱', '💻', '🎧'];
 const FONTS = ['Roboto', 'Arial', 'Courier New', 'Georgia', 'Times New Roman'];
+const CONFETTI_COLORS = [
+  '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', 
+  '#536DFE', '#448AFF', '#40C4FF', '#18FFFF', 
+  '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', 
+  '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
+];
+const CONFETTI_SHAPES = ['square', 'circle', 'triangle'];
+const MIN_CONFETTI_COUNT = 10; // Minimum confetti pieces for a short click
+const MAX_CONFETTI_COUNT = 60; // Maximum confetti pieces for a long hold
+const CONFETTI_LIFETIME = 5000; // Increased lifetime of confetti in milliseconds (was 2000)
 
 const getRandomCharacter = () => {
-  return CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+  // 40% chance to get an emoji, 60% chance to get a regular character
+  if (Math.random() < 0.4) {
+    return EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+  } else {
+    return CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+  }
 };
 
 const CharacterSpawner = () => {
   const [balls, setBalls] = useState([]);
+  const [confetti, setConfetti] = useState([]);
   const [holdIndicator, setHoldIndicator] = useState(null);
   const [keyHoldStart, setKeyHoldStart] = useState(null);
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
   const containerRef = useRef(null);
   const holdStartRef = useRef(null);
+
+  // Generate a random confetti piece
+  const createConfettiPiece = (x, y) => {
+    const randomColor = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    const randomShape = CONFETTI_SHAPES[Math.floor(Math.random() * CONFETTI_SHAPES.length)];
+    const angle = Math.random() * Math.PI * 2; // Random angle for direction
+    const speed = Math.random() * 0.8 + 0.2; // Dramatically reduced speed between 0.2 and 1 (was 1-3)
+    
+    return {
+      id: `confetti-${Date.now()}-${Math.random()}`,
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 0.5, // Very gentle initial upward boost (was -1)
+      size: Math.random() * 6 + 4, // Size between 4 and 10 pixels
+      color: randomColor,
+      shape: randomShape,
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() * 2 - 1) * 0.5, // Very slow rotation (was 10-5)
+      createdAt: Date.now(),
+      wobbleOffset: Math.random() * Math.PI * 2, // Random starting phase for wobble
+      wobbleSpeed: Math.random() * 0.02 + 0.01, // Slow wobble speed
+    };
+  };
+
+  // Spawn confetti at a given position
+  const spawnConfetti = (x, y, holdDuration) => {
+    const confettiCount = Math.min(
+      MAX_CONFETTI_COUNT,
+      Math.max(MIN_CONFETTI_COUNT, Math.floor((holdDuration / 1000) * MAX_CONFETTI_COUNT))
+    );
+    const newConfetti = Array(confettiCount)
+      .fill(null)
+      .map(() => createConfettiPiece(x, y));
+    
+    setConfetti(prev => [...prev, ...newConfetti]);
+    
+    // Clean up confetti after its lifetime
+    setTimeout(() => {
+      setConfetti(prev => prev.filter(c => c.createdAt > Date.now() - CONFETTI_LIFETIME));
+    }, CONFETTI_LIFETIME);
+  };
 
   const spawnBall = (character, x, y, holdDuration) => {
     const newBall = {
@@ -26,11 +85,14 @@ const CharacterSpawner = () => {
       y,
       vx: Math.random() * 4 - 2, // Random initial velocity x
       vy: Math.random() * 4 - 2, // Random initial velocity y
-      radius: Math.min(Math.max(10, holdDuration / 50), 50), // Radius increases with hold duration, capped at 50
+      radius: Math.min(Math.max(10, holdDuration / 50), 200), // Radius increases with hold duration, capped at 200 (was 50)
       character,
       font: selectedFont,
     };
     setBalls((prevBalls) => [...prevBalls, newBall]);
+    
+    // Spawn confetti when a character is spawned
+    spawnConfetti(x, y, holdDuration);
   };
 
   const handleMouseDown = (e) => {
@@ -97,7 +159,7 @@ const CharacterSpawner = () => {
       const interval = setInterval(() => {
         setHoldIndicator((prev) => {
           if (!prev) return null;
-          return { ...prev, radius: Math.min(prev.radius + 1, 50) }; // Cap radius at 50
+          return { ...prev, radius: Math.min(prev.radius + 1, 200) }; // Cap radius at 200 (was 50)
         });
       }, 50);
 
@@ -179,6 +241,40 @@ const CharacterSpawner = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const updateConfetti = () => {
+      setConfetti((prevConfetti) => {
+        return prevConfetti.map((piece) => {
+          let { x, y, vx, vy, rotation, rotationSpeed, wobbleOffset, wobbleSpeed } = piece;
+
+          // Apply extremely reduced gravity for ultra-slow falling
+          vy += GRAVITY * 0.005; // Dramatically reduced gravity (was 0.02)
+
+          // Apply slow air resistance
+          vx *= 0.995; // Slower horizontal deceleration
+          vy *= 0.995; // Slower vertical deceleration
+
+          // Add gentle wobble movement for dreamy effect
+          const wobble = Math.sin(wobbleOffset) * 0.1;
+          wobbleOffset += wobbleSpeed;
+          
+          // Apply velocity with wobble
+          x += vx + wobble;
+          y += vy;
+
+          // Apply slow rotation
+          rotation += rotationSpeed;
+
+          return { ...piece, x, y, vx, vy, rotation, wobbleOffset };
+        });
+      });
+      requestAnimationFrame(updateConfetti);
+    };
+
+    const animationId = requestAnimationFrame(updateConfetti);
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -217,6 +313,22 @@ const CharacterSpawner = () => {
         >
           {ball.character}
         </div>
+      ))}
+      {confetti.map((piece) => (
+        <div
+          key={piece.id}
+          style={{
+            position: 'absolute',
+            left: piece.x,
+            top: piece.y,
+            width: `${piece.size}px`,
+            height: `${piece.size}px`,
+            backgroundColor: piece.color,
+            transform: `translate(-50%, -50%) rotate(${piece.rotation}deg)`,
+            borderRadius: piece.shape === 'circle' ? '50%' : '0',
+            clipPath: piece.shape === 'triangle' ? 'polygon(50% 0%, 0% 100%, 100% 100%)' : 'none',
+          }}
+        ></div>
       ))}
     </div>
   );

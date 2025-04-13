@@ -1,13 +1,52 @@
+/* News Ticker Styles - Simple and reliable */
+.news-ticker-container {
+  width: 100%;
+  height: 30px; /* Fixed height for the ticker */
+  background: rgba(20, 20, 30, 0.85);
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.news-ticker-track {
+  position: absolute;
+  white-space: nowrap;
+  will-change: transform;
+  animation: ticker-scroll 30s linear infinite;
+  padding: 6px 0;
+  color: white;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.news-ticker-container:hover .news-ticker-track {
+  animation-play-state: paused;
+}
+
 body, html {
   height: 100%;
   margin: 0;
   overflow-y: auto;
 }
 
+/* Add top padding to the container to prevent the ticker from overlapping content */
 .home-container {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 40px 1rem 2rem; /* Added top padding to account for ticker height */
   min-height: 100vh;
   display: flex;
   flex-direction: column;

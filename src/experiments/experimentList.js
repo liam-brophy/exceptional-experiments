@@ -35,7 +35,7 @@ const experimentList = [
     title: 'Magic Crayon',
     description: 'Draw and watch the magic happen with this interactive experiment.',
     component: MagicCrayon,
-    thumbnail: '/thumbnails/magicCrayon.png', // Placeholder, update if a specific thumbnail exists
+    thumbnail: '/thumbnails/MagicCrayon.png', // Fixed capitalization to match actual filename
   },
 ];
 

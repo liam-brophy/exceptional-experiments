@@ -4,516 +4,332 @@ import p5 from 'p5';
 
 const MagicCrayon = () => {
   const sketchRef = useRef(null);
-  const [growthSpeed, setGrowthSpeed] = useState(5);
-  const [branchingFactor, setBranchingFactor] = useState(3);
-  const [colorVariety, setColorVariety] = useState(4);
-  const [evolutionMode, setEvolutionMode] = useState(true);
+  const p5InstanceRef = useRef(null);
+  const [brushSize, setBrushSize] = useState(25);
+  const [fadeSpeed, setFadeSpeed] = useState(5);
+  const [blurAmount, setBlurAmount] = useState(0); 
   
-  useEffect(() => {
-    let sketch = new p5((p) => {
-      // Settings that p5 will access
-      let settings = {
-        growthSpeed,
-        branchingFactor,
-        colorVariety,
-        evolutionMode
-      };
-      
-      let paths = [];
-      let currentPath = [];
-      let growthSystems = [];
-      
-      // Define the cool color palette
-      const coolPalette = [
-        [79, 195, 247],  // Light blue
-        [129, 212, 250], // Sky blue
-        [0, 150, 136],   // Teal
-        [77, 182, 172],  // Light teal
-        [121, 134, 203], // Lavender
-        [149, 117, 205], // Purple
-        [100, 221, 187], // Aqua mint
-        [115, 240, 174], // Light green
-      ];
-      
-      p.setup = () => {
-        let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
-        canvas.parent(sketchRef.current);
-        p.background(10, 20, 30); // Deep blue-black for contrast
-        p.frameRate(60);
-        p.colorMode(p.RGB, 255, 255, 255, 1); // Use alpha range 0-1 for easier blending
-      };
-      
-      p.draw = () => {
-        // Slower fade for longer-lasting effects
-        p.background(10, 20, 30, 0.01);
-        
-        // Draw all paths with flowing, glowing effect
-        for (let i = 0; i < paths.length; i++) {
-          const path = paths[i];
-          if (path.length > 1) {
-            // Fluid, large strokes
-            p.noFill();
-            p.strokeWeight(10); // Larger stroke
-            
-            // Inner glow - brighter core
-            const baseColor = path.color || coolPalette[0];
-            p.stroke(baseColor[0], baseColor[1], baseColor[2], 0.6);
-            drawSmoothPath(path, 10);
-            
-            // Outer glow - softer edge
-            p.strokeWeight(16); 
-            p.stroke(baseColor[0], baseColor[1], baseColor[2], 0.2);
-            drawSmoothPath(path, 16);
-          }
-        }
-        
-        // Draw the current path being drawn
-        if (currentPath.length > 1) {
-          const baseColor = currentPath.color || coolPalette[0];
-          
-          // Fluid, large strokes with glow effect
-          p.noFill();
-          
-          // Inner glow - brighter core
-          p.strokeWeight(10);
-          p.stroke(baseColor[0], baseColor[1], baseColor[2], 0.7);
-          drawSmoothPath(currentPath, 10);
-          
-          // Outer glow - softer edge
-          p.strokeWeight(16);
-          p.stroke(baseColor[0], baseColor[1], baseColor[2], 0.3);
-          drawSmoothPath(currentPath, 16);
-        }
-        
-        // Update and draw organic growth systems
-        growthSystems.forEach(system => {
-          // Each system manages its own particles and branches
-          system.update(settings.growthSpeed, settings.branchingFactor, settings.evolutionMode);
-          system.draw();
-        });
-        
-        // If in infinite evolution mode, maintain a minimum number of active branches
-        if (settings.evolutionMode) {
-          maintainActiveGrowth();
-        }
-      };
-      
-      // Keep the growth going indefinitely by adding new branches if needed
-      const maintainActiveGrowth = () => {
-        // Count total active branches across all systems
-        let activeBranchCount = 0;
-        growthSystems.forEach(system => {
-          activeBranchCount += system.getActiveBranchCount();
-        });
-        
-        // If there are growth systems but too few active branches, stimulate new growth
-        if (growthSystems.length > 0 && activeBranchCount < 10) {
-          // Find a system with seed points to grow from
-          const systemIndex = Math.floor(p.random(growthSystems.length));
-          const system = growthSystems[systemIndex];
-          
-          // Stimulate new growth from a random seed point
-          if (system.seedPoints.length > 0) {
-            const pointIndex = Math.floor(p.random(system.seedPoints.length));
-            const seedPoint = system.seedPoints[pointIndex];
-            
-            // Create new branch at this point
-            const colorVariation = p.random(-settings.colorVariety * 10, settings.colorVariety * 10);
-            const branchColor = [
-              p.constrain(system.baseColor[0] + colorVariation, 0, 255),
-              p.constrain(system.baseColor[1] + colorVariation, 0, 255),
-              p.constrain(system.baseColor[2] + colorVariation, 0, 255)
-            ];
-            
-            system.createBranch(seedPoint.x, seedPoint.y, branchColor);
-          }
-        }
-      };
-      
-      // Draw a path with smooth curves instead of sharp line segments
-      const drawSmoothPath = (path, lineWeight) => {
-        if (path.length < 2) return;
-        
-        p.beginShape();
-        
-        // Draw a curved line through all points
-        p.curveVertex(path[0].x, path[0].y); // Start control point
-        
-        for (let i = 0; i < path.length; i++) {
-          p.curveVertex(path[i].x, path[i].y);
-        }
-        
-        // End control point
-        p.curveVertex(path[path.length-1].x, path[path.length-1].y);
-        
-        p.endShape();
-      };
-      
-      // Organic Growth System - manages growth particles
-      class GrowthSystem {
-        constructor(pathPoints, baseColor) {
-          this.seedPoints = [...pathPoints];
-          this.baseColor = baseColor;
-          this.lifespan = Infinity; // Essentially immortal when in evolution mode
-          this.age = 0;
-          this.branches = [];
-          
-          // Create initial branches from seed points
-          const step = Math.max(1, Math.floor(pathPoints.length / 10));
-          for (let i = 0; i < pathPoints.length; i += step) {
-            if (i >= pathPoints.length) break;
-            
-            // Create a branch with some randomness in color
-            const colorVariation = p.random(-settings.colorVariety * 10, settings.colorVariety * 10);
-            const branchColor = [
-              p.constrain(baseColor[0] + colorVariation, 0, 255),
-              p.constrain(baseColor[1] + colorVariation, 0, 255),
-              p.constrain(baseColor[2] + colorVariation, 0, 255)
-            ];
-            
-            this.createBranch(pathPoints[i].x, pathPoints[i].y, branchColor);
-          }
-        }
-        
-        // Get the count of active branches
-        getActiveBranchCount() {
-          return this.branches.filter(branch => branch.age < branch.lifespan * 0.8).length;
-        }
-        
-        // Create a new growing branch
-        createBranch(x, y, color) {
-          const angle = p.random(p.TWO_PI);
-          const speed = p.random(0.2, 0.5); // Increased speed for more visible growth
-          
-          this.branches.push({
-            x: x,
-            y: y,
-            originalX: x,
-            originalY: y,
-            segments: [],
-            angle: angle,
-            speed: speed,
-            length: 0,
-            maxLength: p.random(50, 200), // Longer branches
-            thickness: p.random(2, 6), // Thicker branches
-            color: color,
-            age: 0,
-            lifespan: p.random(800, 2000), // Much longer lifespan
-            hasSpawned: false,
-            spawnCount: 0,
-            maxSpawns: Math.floor(p.random(2, 5)), // More potential branches
-            energyLevel: 1.0,
-            growth: 1.0, // Full growth initially
-            growthDirection: 1, // 1 for growing, -1 for shrinking
-            evolutionState: 'growing', // growing, stable, evolving, or dying
-            evolutionTimer: 0,
-            evolutionPeriod: p.random(300, 600)
-          });
-        }
-        
-        // Update all branches
-        update(speedFactor, branchingFactor, evolutionMode) {
-          this.age++;
-          
-          // Update existing branches
-          this.branches = this.branches.filter(branch => {
-            branch.age++;
-            
-            if (evolutionMode) {
-              // In evolution mode, branches go through cycles rather than just dying
-              this.updateEvolutionState(branch);
-            }
-            
-            // Only grow if in an active state
-            if (branch.evolutionState !== 'dying' || !evolutionMode) {
-              // Calculate growth based on energy level and growth factor
-              const movement = branch.speed * speedFactor * 0.1 * branch.energyLevel * branch.growth;
-              
-              if (movement > 0.01) { // Only add segments if there's meaningful growth
-                // Add some gentle, organic waviness to the growth
-                branch.angle += p.random(-0.12, 0.12);
-                
-                // Grow in the current direction
-                const newX = branch.x + Math.cos(branch.angle) * movement;
-                const newY = branch.y + Math.sin(branch.angle) * movement;
-                
-                // Check if new point is within canvas bounds
-                if (newX >= 0 && newX < p.width && newY >= 0 && newY < p.height) {
-                  // Store the segment
-                  branch.segments.push({
-                    x1: branch.x,
-                    y1: branch.y,
-                    x2: newX,
-                    y2: newY
-                  });
-                  
-                  // Update position and length
-                  branch.x = newX;
-                  branch.y = newY;
-                  branch.length += movement;
-                } else {
-                  // Branches that hit the edge change direction
-                  branch.angle += p.PI + p.random(-0.5, 0.5);
-                }
-                
-                // Chance to create new branches based on energy level and settings
-                if (branch.evolutionState !== 'dying' && 
-                    branch.length > branch.maxLength * 0.2 &&
-                    branch.spawnCount < branch.maxSpawns && 
-                    branch.energyLevel > 0.3 &&
-                    p.random(1) < 0.02 * branchingFactor) {
-                  
-                  // Create a child branch with slightly modified properties
-                  const childColor = [...branch.color];
-                  // Slight color evolution
-                  childColor[0] = p.constrain(childColor[0] + p.random(-15, 15), 0, 255);
-                  childColor[1] = p.constrain(childColor[1] + p.random(-15, 15), 0, 255);
-                  childColor[2] = p.constrain(childColor[2] + p.random(-15, 15), 0, 255);
-                  
-                  this.createBranch(
-                    branch.x, 
-                    branch.y, 
-                    childColor
-                  );
-                  
-                  branch.spawnCount++;
-                  branch.energyLevel *= 0.85; // Reduce energy after spawning
-                }
-              }
-            }
-            
-            // If we're using evolution mode, branches don't die from age unless marked as dying
-            if (evolutionMode) {
-              return branch.evolutionState !== 'dying' || branch.segments.length > 0;
-            } else {
-              // Traditional aging system
-              branch.energyLevel = p.map(branch.age, 0, branch.lifespan, 1.0, 0);
-              return branch.age < branch.lifespan;
-            }
-          });
-        }
-        
-        // Update a branch's evolution state
-        updateEvolutionState(branch) {
-          branch.evolutionTimer++;
-          
-          // Transition between states based on timer
-          if (branch.evolutionTimer >= branch.evolutionPeriod) {
-            branch.evolutionTimer = 0;
-            branch.evolutionPeriod = p.random(300, 600); // Reset with new period
-            
-            // Transition to next state
-            switch(branch.evolutionState) {
-              case 'growing':
-                branch.evolutionState = 'stable';
-                branch.growth = 0.5; // Slow down
-                break;
-              case 'stable':
-                // Either evolve or start dying with some randomness
-                branch.evolutionState = p.random() < 0.7 ? 'evolving' : 'dying';
-                if (branch.evolutionState === 'evolving') {
-                  branch.growth = 0.8;
-                  // Refresh energy when evolving
-                  branch.energyLevel = Math.max(branch.energyLevel, p.random(0.5, 0.8));
-                  // Allow spawning of new branches
-                  branch.spawnCount = Math.max(0, branch.spawnCount - 1);
-                  // Change direction slightly
-                  branch.angle += p.random(-p.HALF_PI, p.HALF_PI);
-                } else {
-                  branch.growth = 0.1;
-                }
-                break;
-              case 'evolving':
-                // Either continue stable or start dying
-                branch.evolutionState = p.random() < 0.6 ? 'stable' : 'dying';
-                branch.growth = branch.evolutionState === 'stable' ? 0.5 : 0.1;
-                break;
-              case 'dying':
-                // Once dying, stay dying but segments will be removed gradually
-                // This case is handled in the draw function
-                break;
-            }
-          }
-        }
-        
-        // Draw all branches
-        draw() {
-          // Draw each branch as a series of segments with fading opacity
-          this.branches.forEach(branch => {
-            // Calculate opacity based on age or state
-            let opacity = 1.0;
-            
-            if (settings.evolutionMode) {
-              // In evolution mode, opacity is based on state more than age
-              switch(branch.evolutionState) {
-                case 'growing':
-                  opacity = 1.0;
-                  break;
-                case 'stable':
-                  opacity = 0.9;
-                  break;
-                case 'evolving':
-                  opacity = 0.85 + 0.15 * Math.sin(p.frameCount * 0.05); // Slight pulsing
-                  break;
-                case 'dying':
-                  opacity = p.map(branch.segments.length, 0, branch.segments.length, 0, 0.6);
-                  break;
-              }
-            } else {
-              // Traditional fading
-              opacity = p.map(branch.age, 0, branch.lifespan, 1.0, 0);
-            }
-            
-            // Draw segments with tapering thickness
-            branch.segments.forEach((segment, i) => {
-              // Taper the branch - thicker at base, thinner at tip
-              const segmentPosition = i / Math.max(1, branch.segments.length);
-              const thickness = branch.thickness * (1 - segmentPosition * 0.5);
-              
-              // Inner glow - core of the branch
-              p.stroke(branch.color[0], branch.color[1], branch.color[2], opacity * 0.8);
-              p.strokeWeight(thickness);
-              p.line(segment.x1, segment.y1, segment.x2, segment.y2);
-              
-              // Outer glow - softer edge
-              p.stroke(branch.color[0], branch.color[1], branch.color[2], opacity * 0.3);
-              p.strokeWeight(thickness * 2);
-              p.line(segment.x1, segment.y1, segment.x2, segment.y2);
-            });
-            
-            // Draw growth tip with a subtle glow
-            if (branch.segments.length > 0 && branch.evolutionState !== 'dying') {
-              p.noStroke();
-              p.fill(branch.color[0], branch.color[1], branch.color[2], opacity * 0.6);
-              p.circle(branch.x, branch.y, branch.thickness * 4); // Larger growth tip
-              
-              // Add additional particle effects at the tip for more visible growth
-              if (p.frameCount % 3 === 0 && branch.evolutionState === 'growing') {
-                for (let i = 0; i < 2; i++) {
-                  p.fill(branch.color[0], branch.color[1], branch.color[2], opacity * 0.4);
-                  p.circle(
-                    branch.x + p.random(-branch.thickness, branch.thickness),
-                    branch.y + p.random(-branch.thickness, branch.thickness),
-                    p.random(1, branch.thickness * 1.5)
-                  );
-                }
-              }
-            }
-            
-            // If branch is dying and in evolution mode, start removing segments from the beginning
-            if (settings.evolutionMode && branch.evolutionState === 'dying' && branch.segments.length > 0) {
-              if (p.frameCount % 10 === 0) {
-                branch.segments.shift(); // Remove the oldest segment
-              }
-            }
-          });
-        }
-        
-        // Check if the growth system is still alive
-        isAlive() {
-          // Systems are immortal in evolution mode as long as they have branches
-          if (settings.evolutionMode) {
-            return this.branches.length > 0;
-          }
-          return this.age < this.lifespan || this.branches.length > 0;
-        }
-      }
-      
-      // Basic p5.js mouse event handlers
-      p.mousePressed = () => {
-        // Don't start a path if clicking on controls
-        if (p.mouseX > p.width - 250 && p.mouseY < 200) return; 
-        
-        // Create a new path with a random color from the cool palette
-        currentPath = [];
-        currentPath.color = coolPalette[Math.floor(p.random(coolPalette.length))];
-        paths.push(currentPath);
-        
-        const point = { x: p.mouseX, y: p.mouseY };
-        currentPath.push(point);
-      };
-      
-      p.mouseDragged = () => {
-        // Only add points if we're actually drawing
-        if (currentPath.length > 0) {
-          // Add point with some smoothing based on distance
-          const lastPoint = currentPath[currentPath.length - 1];
-          const mousePoint = { x: p.mouseX, y: p.mouseY };
-          
-          // Calculate distance to last point
-          const d = p.dist(lastPoint.x, lastPoint.y, mousePoint.x, mousePoint.y);
-          
-          // Add intermediate points for smoother curves if distance is large
-          if (d > 10) {
-            const numSteps = Math.floor(d / 5);
-            for (let i = 1; i <= numSteps; i++) {
-              const t = i / numSteps;
-              const x = p.lerp(lastPoint.x, mousePoint.x, t);
-              const y = p.lerp(lastPoint.y, mousePoint.y, t);
-              currentPath.push({ x, y });
-            }
-          } else {
-            currentPath.push(mousePoint);
-          }
-        }
-      };
-      
-      p.mouseReleased = () => {
-        // Only create growth system if we've actually drawn something
-        if (currentPath.length > 5) {
-          // Create an organic growth system from the path
-          growthSystems.push(new GrowthSystem([...currentPath], currentPath.color));
-        }
-      };
-      
-      p.keyPressed = () => {
-        if (p.key === 'c' || p.key === 'C') {
-          // Clear canvas
-          paths = [];
-          growthSystems = [];
-          p.background(10, 20, 30);
-        }
-      };
-      
-      p.windowResized = () => {
-        p.resizeCanvas(p.windowWidth, p.windowHeight);
-      };
-      
-      // Update settings when they change
-      p.updateSettings = (newSettings) => {
-        settings = { ...settings, ...newSettings };
-      };
-    }, sketchRef.current);
-    
-    // Update settings when React state changes
-    sketch.updateSettings({ 
-      growthSpeed, 
-      branchingFactor,
-      colorVariety,
-      evolutionMode
+  // Color state management
+  const [currentColorHex, setCurrentColorHex] = useState('#64C8FF');
+  const [backgroundColorHex, setBackgroundColorHex] = useState('#1E1E23');
+  const [recentColors, setRecentColors] = useState(['#64C8FF', '#FF7F50', '#7B68EE', '#20B2AA', '#FFB6C1']);
+
+  // Helper functions for color conversion
+  const hexToRgb = (hex) => {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return [r, g, b];
+  };
+
+  const rgbToHex = (r, g, b) => {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  };
+
+  // Add a new color to recent colors history
+  const addToRecentColors = (colorHex) => {
+    setRecentColors(prevColors => {
+      const filteredColors = prevColors.filter(c => c !== colorHex);
+      return [colorHex, ...filteredColors].slice(0, 12);
     });
+  };
+
+  // Handle brush color change
+  const handleBrushColorChange = (colorHex) => {
+    setCurrentColorHex(colorHex);
+    addToRecentColors(colorHex);
+  };
+
+  useEffect(() => {
+    if (sketchRef.current && !p5InstanceRef.current) {
+      const sketch = new p5((p) => {
+        // Settings that p5 will access
+        let settings = {
+          brushSize,
+          fadeSpeed,
+          currentColor: hexToRgb(currentColorHex),
+          backgroundColor: hexToRgb(backgroundColorHex),
+          blurAmount
+        };
+        
+        let paths = [];
+        let currentPath = [];
+        
+        // Main drawing buffer
+        let mainBuffer;
+        // Blur effect buffer
+        let blurBuffer;
+        
+        // Initialize the canvas and buffers
+        p.setup = () => {
+          let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+          canvas.parent(sketchRef.current);
+          
+          // Initialize color mode
+          p.colorMode(p.RGB, 255, 255, 255, 1);
+          
+          // Create main drawing buffer
+          mainBuffer = p.createGraphics(p.width, p.height);
+          mainBuffer.colorMode(p.RGB, 255, 255, 255, 1);
+          
+          // Create blur buffer
+          blurBuffer = p.createGraphics(p.width, p.height);
+          blurBuffer.colorMode(p.RGB, 255, 255, 255, 1);
+          
+          // Set initial background
+          p.background(...settings.backgroundColor);
+          mainBuffer.background(...settings.backgroundColor);
+          
+          p.frameRate(60);
+        };
+        
+        // Main draw loop
+        p.draw = () => {
+          // Clear the main canvas
+          p.clear();
+          
+          // Apply subtle fade effect to main buffer
+          mainBuffer.background(...settings.backgroundColor, 0.01 * (settings.fadeSpeed * 0.1));
+          
+          // Draw all saved paths to the main buffer
+          for (let i = 0; i < paths.length; i++) {
+            const path = paths[i];
+            
+            if (path.length > 1) {
+              // Calculate opacity based on age
+              const ageFactor = Math.max(0, 1 - (i / paths.length) * 0.5);
+              
+              // Draw the path with an oil pastel effect
+              drawOilPastelStroke(mainBuffer, path, path.color, path.thickness * ageFactor, ageFactor);
+            }
+          }
+          
+          // Draw the current path being drawn
+          if (currentPath.length > 1) {
+            drawOilPastelStroke(mainBuffer, currentPath, currentPath.color, currentPath.thickness, 1.0);
+          }
+          
+          // Apply blur effect if needed
+          if (settings.blurAmount > 0) {
+            // Custom blur implementation 
+            applyStackBlur(settings.blurAmount);
+            
+            // Display the blurred buffer
+            p.image(blurBuffer, 0, 0);
+          } else {
+            // Display the main buffer directly (no blur)
+            p.image(mainBuffer, 0, 0);
+          }
+          
+          // Gradually remove old paths based on fade speed
+          if (p.frameCount % Math.max(10, 60 - settings.fadeSpeed * 5) === 0 && paths.length > 0) {
+            paths.shift();
+          }
+        };
+        
+        // Apply a stack blur effect (more efficient than p5's built-in filter)
+        const applyStackBlur = (amount) => {
+          // Copy main buffer to blur buffer
+          blurBuffer.clear();
+          blurBuffer.image(mainBuffer, 0, 0);
+          
+          // Apply a single blur with a safe amount
+          if (amount > 0) {
+            // Use a single blur pass with a limited strength to prevent crashes
+            // p5's BLUR filter can be unstable with higher values or multiple passes
+            const safeBlurAmount = Math.min(3, amount / 2); // Cap the blur amount
+            
+            try {
+              // Apply blur with a safe value
+              blurBuffer.filter(p.BLUR, safeBlurAmount);
+              
+              // For stronger blur effects, we'll reduce the opacity instead of
+              // applying multiple passes, which is safer
+              if (amount > 3) {
+                // Add a slightly transparent overlay to simulate stronger blur
+                blurBuffer.fill(
+                  settings.backgroundColor[0], 
+                  settings.backgroundColor[1], 
+                  settings.backgroundColor[2], 
+                  amount * 0.05
+                );
+                blurBuffer.noStroke();
+                blurBuffer.rect(0, 0, p.width, p.height);
+              }
+            } catch (error) {
+              console.warn("Blur effect failed, falling back to unblurred display", error);
+              blurBuffer.image(mainBuffer, 0, 0);
+            }
+          }
+        };
+        
+        // Draw a stroke with oil pastel texture
+        const drawOilPastelStroke = (buffer, path, color, thickness, opacity) => {
+          if (path.length < 2) return;
+          
+          // Draw the main stroke
+          buffer.noFill();
+          
+          // Draw multiple overlapping strokes with slight variations to create texture
+          for (let j = 0; j < 3; j++) {
+            const jitter = j * 0.5;
+            const alpha = opacity * (1 - j * 0.2);
+            
+            buffer.stroke(color[0], color[1], color[2], alpha);
+            buffer.strokeWeight(thickness - j * 2);
+            buffer.beginShape();
+            
+            for (let i = 0; i < path.length; i++) {
+              // Add slight jitter to points for texture
+              const x = path[i].x + p.random(-jitter, jitter);
+              const y = path[i].y + p.random(-jitter, jitter);
+              buffer.vertex(x, y);
+            }
+            
+            buffer.endShape();
+          }
+          
+          // Add chalk-like particles along the stroke for texture
+          if (opacity > 0.5) {
+            buffer.noStroke();
+            buffer.fill(color[0], color[1], color[2], opacity * 0.3);
+            
+            for (let i = 1; i < path.length; i += 3) {
+              const x = path[i].x;
+              const y = path[i].y;
+              const size = thickness * 0.5;
+              
+              // Add scattered particles around the line
+              for (let j = 0; j < 2; j++) {
+                buffer.circle(
+                  x + p.random(-thickness/2, thickness/2),
+                  y + p.random(-thickness/2, thickness/2),
+                  p.random(1, size)
+                );
+              }
+            }
+          }
+        };
+        
+        // Basic p5.js mouse event handlers
+        p.mousePressed = () => {
+          // Don't start a path if clicking on controls
+          if (p.mouseX > p.width - 300 && p.mouseY < 200) return; 
+          
+          // Create a new path
+          currentPath = [];
+          currentPath.color = settings.currentColor;
+          currentPath.thickness = settings.brushSize;
+          paths.push(currentPath);
+          
+          const point = { x: p.mouseX, y: p.mouseY };
+          currentPath.push(point);
+        };
+        
+        p.mouseDragged = () => {
+          // Only add points if we're actually drawing
+          if (currentPath.length > 0) {
+            // Add point with some smoothing based on distance
+            const lastPoint = currentPath[currentPath.length - 1];
+            const mousePoint = { x: p.mouseX, y: p.mouseY };
+            
+            // Calculate distance to last point
+            const d = p.dist(lastPoint.x, lastPoint.y, mousePoint.x, mousePoint.y);
+            
+            // Add intermediate points for smoother curves if distance is large
+            if (d > 8) {
+              const numSteps = Math.floor(d / 4);
+              for (let i = 1; i <= numSteps; i++) {
+                const t = i / numSteps;
+                const x = p.lerp(lastPoint.x, mousePoint.x, t);
+                const y = p.lerp(lastPoint.y, mousePoint.y, t);
+                currentPath.push({ x, y });
+              }
+            } else {
+              currentPath.push(mousePoint);
+            }
+          }
+        };
+        
+        p.mouseReleased = () => {
+          // No special action needed on release
+        };
+        
+        p.keyPressed = () => {
+          if (p.key === 'c' || p.key === 'C') {
+            // Clear canvas
+            paths = [];
+            p.background(...settings.backgroundColor);
+            mainBuffer.background(...settings.backgroundColor);
+            blurBuffer.background(...settings.backgroundColor);
+          }
+        };
+        
+        p.windowResized = () => {
+          p.resizeCanvas(p.windowWidth, p.windowHeight);
+          
+          // Resize buffers when window is resized
+          const newBuffer = p.createGraphics(p.width, p.height);
+          newBuffer.colorMode(p.RGB, 255, 255, 255, 1);
+          newBuffer.image(mainBuffer, 0, 0);
+          mainBuffer.remove();
+          mainBuffer = newBuffer;
+          
+          // Create new blur buffer at new window size
+          const newBlurBuffer = p.createGraphics(p.width, p.height);
+          newBlurBuffer.colorMode(p.RGB, 255, 255, 255, 1);
+          blurBuffer.remove();
+          blurBuffer = newBlurBuffer;
+          
+          // Redraw background
+          mainBuffer.background(...settings.backgroundColor);
+        };
+        
+        // Update settings when they change
+        p.updateSettings = (newSettings) => {
+          const prevBgColor = settings.backgroundColor;
+          settings = { ...settings, ...newSettings };
+          
+          // If background color changed, redraw background immediately
+          if (newSettings.backgroundColor && 
+              (prevBgColor[0] !== newSettings.backgroundColor[0] ||
+               prevBgColor[1] !== newSettings.backgroundColor[1] ||
+               prevBgColor[2] !== newSettings.backgroundColor[2])) {
+            p.background(...settings.backgroundColor);
+            mainBuffer.background(...settings.backgroundColor);
+            blurBuffer.background(...settings.backgroundColor);
+          }
+        };
+      }, sketchRef.current);
+      
+      // Store the p5 instance
+      p5InstanceRef.current = sketch;
+    }
     
     // Cleanup on unmount
     return () => {
-      sketch.remove();
+      if (p5InstanceRef.current) {
+        p5InstanceRef.current.remove();
+        p5InstanceRef.current = null;
+      }
     };
-  }, []); // Empty dependency array to initialize once
+  }, []); 
   
   // Update p5 settings when React state changes
   useEffect(() => {
-    if (sketchRef.current && sketchRef.current.childNodes[0]) {
-      const p5Instance = sketchRef.current.childNodes[0].p5;
-      if (p5Instance && typeof p5Instance.updateSettings === 'function') {
-        p5Instance.updateSettings({ 
-          growthSpeed, 
-          branchingFactor,
-          colorVariety,
-          evolutionMode
-        });
-      }
+    if (p5InstanceRef.current) {
+      // Directly update the p5 instance using our ref
+      p5InstanceRef.current.updateSettings({ 
+        brushSize,
+        fadeSpeed,
+        currentColor: hexToRgb(currentColorHex),
+        backgroundColor: hexToRgb(backgroundColorHex),
+        blurAmount
+      });
     }
-  }, [growthSpeed, branchingFactor, colorVariety, evolutionMode]);
-  
+  }, [brushSize, fadeSpeed, currentColorHex, backgroundColorHex, blurAmount]);
+
   return (
     <div className="magic-crayon-container">
       <div 
@@ -521,57 +337,121 @@ const MagicCrayon = () => {
         className="canvas-container"
       ></div>
       
-      <div className="controls">
-        <h3>Organic Growth</h3>
-        
+      <div className="controls simple-controls">
+        {/* Brush Size Control */}
         <div className="control-group">
-          <label>Growth Speed: {growthSpeed}</label>
+          <label>Brush Size: {brushSize}px</label>
+          <input 
+            type="range" 
+            min="5" 
+            max="50" 
+            value={brushSize} 
+            onChange={(e) => setBrushSize(Number(e.target.value))}
+          />
+        </div>
+        
+        {/* Fade Speed Control */}
+        <div className="control-group">
+          <label>Fade Speed: {fadeSpeed}</label>
           <input 
             type="range" 
             min="1" 
             max="10" 
-            value={growthSpeed} 
-            onChange={(e) => setGrowthSpeed(Number(e.target.value))}
+            value={fadeSpeed} 
+            onChange={(e) => setFadeSpeed(Number(e.target.value))}
           />
         </div>
         
+        {/* Blur Effect Control */}
         <div className="control-group">
-          <label>Branching: {branchingFactor}</label>
+          <label>Blur Effect: {blurAmount > 0 ? blurAmount : 'Off'}</label>
           <input 
             type="range" 
-            min="1" 
-            max="5" 
-            value={branchingFactor} 
-            onChange={(e) => setBranchingFactor(Number(e.target.value))}
-          />
-        </div>
-        
-        <div className="control-group">
-          <label>Color Variety: {colorVariety}</label>
-          <input 
-            type="range" 
-            min="1" 
+            min="0" 
             max="10" 
-            value={colorVariety} 
-            onChange={(e) => setColorVariety(Number(e.target.value))}
+            value={blurAmount} 
+            onChange={(e) => setBlurAmount(Number(e.target.value))}
           />
         </div>
         
+        {/* Brush Color Selection */}
         <div className="control-group">
-          <label>
+          <label>Brush Color</label>
+          <div className="color-picker-container">
             <input
-              type="checkbox"
-              checked={evolutionMode}
-              onChange={(e) => setEvolutionMode(e.target.checked)}
-              style={{ marginRight: '8px' }}
+              type="color"
+              value={currentColorHex}
+              onChange={(e) => handleBrushColorChange(e.target.value)}
+              className="color-picker-input main-color-picker"
+              title="Choose brush color"
             />
-            Infinite Evolution
-          </label>
+            <div className="selected-color-preview" style={{ backgroundColor: currentColorHex }}>
+              <span className="color-hex-value">{currentColorHex}</span>
+            </div>
+          </div>
+          
+          {/* Recent Colors Palette */}
+          <div className="recent-colors-palette">
+            {recentColors.map((color, index) => (
+              <div 
+                key={index}
+                className={`color-swatch ${color === currentColorHex ? 'selected' : ''}`}
+                style={{ backgroundColor: color }}
+                onClick={() => handleBrushColorChange(color)}
+                title={color}
+              />
+            ))}
+          </div>
+        </div>
+        
+        {/* Background Color Selection */}
+        <div className="control-group">
+          <label>Background Color</label>
+          <div className="color-picker-container">
+            <input
+              type="color"
+              value={backgroundColorHex}
+              onChange={(e) => setBackgroundColorHex(e.target.value)}
+              className="color-picker-input bg-color-picker"
+              title="Choose background color"
+            />
+            <div className="selected-color-preview" style={{ backgroundColor: backgroundColorHex }}>
+              <span className="color-hex-value">{backgroundColorHex}</span>
+            </div>
+          </div>
+          
+          {/* Quick Background Presets */}
+          <div className="background-presets">
+            <div 
+              className="bg-preset" 
+              style={{ backgroundColor: '#1E1E23' }}
+              onClick={() => setBackgroundColorHex('#1E1E23')} 
+              title="Dark"
+            />
+            <div 
+              className="bg-preset" 
+              style={{ backgroundColor: '#0F1928' }}
+              onClick={() => setBackgroundColorHex('#0F1928')} 
+              title="Deep Blue"
+            />
+            <div 
+              className="bg-preset" 
+              style={{ backgroundColor: '#28231E' }}
+              onClick={() => setBackgroundColorHex('#28231E')} 
+              title="Dark Brown"
+            />
+            <div 
+              className="bg-preset" 
+              style={{ backgroundColor: '#E6E1DD' }}
+              onClick={() => setBackgroundColorHex('#E6E1DD')} 
+              title="Light"
+            />
+          </div>
         </div>
       </div>
       
-      <div className="instructions">
-        Draw with the organic crayon to create living, evolving patterns!
+      <div className="instructions simple-instructions">
+        Draw with the oil pastel crayon
         <br/>
         Press 'C' to clear the canvas
       </div>
