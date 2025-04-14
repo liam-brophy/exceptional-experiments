@@ -4,6 +4,7 @@ import PixelMirror from './pixelMirror/PixelMirror';
 import CharacterSpawner from './characterSpawner/CharacterSpawner';
 import MagicCrayon from './magicCrayon/MagicCrayon';
 import TypeCaster from './typeCaster/TypeCaster';
+import Outliner from './outliner/Outliner';
 
 const experimentList = [
   {
@@ -45,6 +46,14 @@ const experimentList = [
     description: 'Cast text characters that animate and fall across your screen with physics effects.',
     component: TypeCaster,
     thumbnail: '/thumbnails/typeCaster.png', // Fixed to match actual filename (using camelCase)
+  },
+  {
+    id: 'outliner',
+    slug: 'outliner',
+    title: 'Outliner',
+    description: 'Create artistic outlines with customizable styles and animations.',
+    component: Outliner,
+    thumbnail: '/thumbnails/outliner.png', // Placeholder - you may need to create this image
   },
 ];
 
