@@ -2,13 +2,13 @@
 .news-ticker-container {
   width: 100%;
   height: 30px; /* Fixed height for the ticker */
-  background: rgba(179, 255, 0, 0.85);
+  background: #aaff00;
   overflow: hidden;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 100;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -18,24 +18,18 @@
   will-change: transform;
   animation: ticker-scroll 2000s linear infinite; /* Increased from 380s to 600s for slower scrolling */
   padding: 6px 0;
-  color: rgb(0, 0, 0);
+  color: #000000;
   font-family: Arial, Helvetica, sans-serif;
-  /* font-weight: 900; */
   font-size: 13px;
 }
 
-/* Laboratory title styling with trendy Orbitron font */
+/* Laboratory title styling */
 .laboratory-title {
-  font-family: 'Orbitron', sans-serif;
   font-weight: 600;
   font-size: 2rem;
   letter-spacing: 4px;
-  color: #333;
+  color: var(--text-color);
   text-transform: uppercase;
-  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
   margin-bottom: 1rem;
   text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -57,6 +51,7 @@ body, html {
   height: 100%;
   margin: 0;
   overflow-y: auto;
+  font-family: 'Adso', sans-serif;
 }
 
 /* Add top padding to the container to prevent the ticker from overlapping content */
@@ -84,7 +79,7 @@ header h1 {
   gap: 1rem;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color, #ddd); /* Use your theme variable */
+  border-bottom: 1px solid var(--border-color);
 }
 
 .search-box {
@@ -94,11 +89,12 @@ header h1 {
 .search-box input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color, #ccc);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
-  background-color: var(--input-bg, #fff);
-  color: var(--text-color, #333);
+  font-family: 'Adso', sans-serif;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 .tag-filters {
@@ -109,17 +105,18 @@ header h1 {
 
 .tag-button {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--primary-color, #007bff);
+  border: 1px solid var(--primary-color);
   background-color: transparent;
-  color: var(--primary-color, #007bff);
+  color: var(--primary-color);
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: 'Adso', sans-serif;
 }
 
 .tag-button.active,
 .tag-button:hover {
-  background-color: var(--primary-color, #007bff);
+  background-color: var(--primary-color);
   color: white;
 }
 
@@ -251,4 +248,207 @@ header h1 {
 .experiments-grid .experiment-card-wrapper.experiment-low-poly-map:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 16px rgba(253, 126, 20, 0.6);
+}
+
+/* Experimental Tag System */
+.experimental-tag-container {
+  padding: 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  perspective: 1000px;
+}
+
+.experimental-tag {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+  overflow: visible;
+  cursor: pointer;
+}
+
+.experimental-tag:hover {
+  transform: translateY(-5px) rotateX(10deg);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.experimental-tag:active {
+  transform: translateY(-2px) rotateX(5deg);
+}
+
+.experimental-tag.selected {
+  transform: translateZ(10px) scale(1.05);
+}
+
+.experimental-tag .tag-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+  font-family: 'Adso', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.tag-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 4px;
+  filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.experimental-tag:hover .tag-glow {
+  opacity: 0.6;
+}
+
+.experimental-tag.selected .tag-glow {
+  opacity: 0.8;
+}
+
+/* Update color styles for tags to be black and white */
+.experimental-tag .tag-content {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+.experimental-tag.selected .tag-content {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+}
+
+.tag-glow {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.experimental-tag.selected .tag-glow {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.tags-heading {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+  background: linear-gradient(135deg, #ff7b00, #ff006a);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 2px;
+  transform: skew(-5deg);
+}
+
+.tag-animation {
+  animation: pulseTag 2s infinite alternate;
+}
+
+@keyframes pulseTag {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+.tags-area {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(5px);
+  position: relative;
+  overflow: hidden;
+}
+
+.tags-area::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tags-area:hover::before {
+  opacity: 1;
+  animation: rotate 8s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Theme Toggle container */
+.theme-toggle-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Ensure theme toggle button fits well with the page design */
+.theme-toggle-container .theme-toggle {
+  transform: scale(1.2);
+}
+
+/* Add these styles for the sort buttons */
+.sort-button {
+  font-family: 'Adso', sans-serif !important;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Black and white theme for the sort buttons */
+.mantine-Chip-root {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.mantine-Chip-root[data-checked] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.mantine-Chip-root:not([data-checked]) {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: none !important;
+}
+
+[data-theme="dark"] .mantine-Chip-root:not([data-checked]) {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+[data-theme="dark"] .mantine-Chip-root[data-checked] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: none !important;
 }

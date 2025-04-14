@@ -28,12 +28,24 @@ const AppWithMantineTheme = () => {
   // Update Mantine theme based on custom theme
   const mantineTheme = {
     colorScheme: theme, // Use theme from ThemeContext for Mantine
+    globalStyles: (theme) => ({
+      '*, *::before, *::after': {
+        boxSizing: 'border-box',
+      },
+      body: {
+        // Ensure scrolling is enabled
+        overflowY: 'auto',
+        height: '100%',
+      },
+      html: {
+        height: '100%',
+      }
+    }),
   };
 
   return (
     <MantineProvider
       theme={mantineTheme}
-      withGlobalStyles
       withNormalizeCSS
     >
       <App />

@@ -1,59 +1,94 @@
-/* Theme override CSS - Explicit styles for light and dark modes */
+/* Theme override CSS - Black and White theme with Adso font */
 
 /* Force light theme styles */
 html[data-theme="light"],
 body[data-theme="light"] {
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
-  --background-color: #f5f7fa;
-  --text-color: #333;
-  --text-color-secondary: #666;
-  --card-background: #fff;
+  --primary-color: #000000;
+  --secondary-color: #333333;
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --text-color-secondary: #333333;
+  --card-background: #ffffff;
   --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  --border-color: #ddd;
-  --input-bg: #fff;
+  --border-color: #000000;
+  --input-bg: #ffffff;
   --tag-bg: #f0f0f0;
-  --tag-text: #555;
+  --tag-text: #000000;
   --header-bg: rgba(255, 255, 255, 0.85);
   
   /* Force background color on body */
-  background-color: #f5f7fa !important;
-  color: #333 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+
+  /* Light mode scrollbar variables */
+  --scrollbar-width: 12px;
+  --scrollbar-thumb-color-1: #000000; /* Black */
+  --scrollbar-thumb-color-2: #333333; /* Dark gray */
+  --scrollbar-track: rgba(240, 240, 240, 0.8);
+  --scrollbar-glow: 0 0 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Force dark theme styles */
 html[data-theme="dark"],
 body[data-theme="dark"] {
-  --primary-color: #60a5fa;
-  --secondary-color: #4ade80;
-  --background-color: #121212;
-  --text-color: #e0e0e0;
-  --text-color-secondary: #a0a0a0;
-  --card-background: #1e1e1e;
-  --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  --border-color: #333;
-  --input-bg: #2a2a2a;
-  --tag-bg: #2a2a2a;
-  --tag-text: #bbb;
-  --header-bg: rgba(18, 18, 18, 0.85);
+  --primary-color: #ffffff;
+  --secondary-color: #cccccc;
+  --background-color: #000000;
+  --text-color: #ffffff;
+  --text-color-secondary: #cccccc;
+  --card-background: #121212;
+  --card-shadow: 0 4px 6px rgba(255,255,255,0.1);
+  --border-color: #ffffff;
+  --input-bg: #121212;
+  --tag-bg: #333333;
+  --tag-text: #ffffff;
+  --header-bg: rgba(0, 0, 0, 0.85);
   
   /* Force background color on body */
-  background-color: #121212 !important;
-  color: #e0e0e0 !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+
+  /* Dark mode scrollbar variables */
+  --scrollbar-width: 12px;
+  --scrollbar-thumb-color-1: #ffffff; /* White */
+  --scrollbar-thumb-color-2: #cccccc; /* Light gray */
+  --scrollbar-track: rgba(30, 30, 30, 0.8);
+  --scrollbar-glow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Apply Adso font to all Mantine components */
+body {
+  font-family: 'Adso', sans-serif !important;
+}
+
+.mantine-Button-root,
+.mantine-Input-input,
+.mantine-TextInput-input,
+.mantine-Select-input,
+.mantine-Checkbox-label,
+.mantine-Radio-label,
+.mantine-Switch-label,
+.mantine-Tabs-tab,
+.mantine-Notification-title,
+.mantine-Notification-description,
+.mantine-Alert-title,
+.mantine-Alert-message,
+.mantine-Menu-item {
+  font-family: 'Adso', sans-serif !important;
 }
 
 /* Additional overrides for Mantine components in dark mode */
 body[data-theme="dark"] .mantine-Paper-root {
-  background-color: #1e1e1e !important;
-  color: #e0e0e0 !important;
+  background-color: #121212 !important;
+  color: #ffffff !important;
 }
 
 body[data-theme="dark"] .mantine-Text-root {
-  color: #e0e0e0 !important;
+  color: #ffffff !important;
 }
 
 body[data-theme="dark"] .mantine-Title-root {
-  color: #e0e0e0 !important;
+  color: #ffffff !important;
 }
 
 /* Button toggle visibility based on theme */
@@ -71,4 +106,66 @@ body[data-theme="dark"] .theme-button .tabler-icon-sun {
 
 body[data-theme="dark"] .theme-button .tabler-icon-moon {
   display: block;
+}
+
+/* CRITICAL SCROLLING FIX - Override any styles that might be preventing scrolling */
+html, body {
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  font-family: 'Adso', sans-serif !important;
+}
+
+body {
+  position: relative !important;
+}
+
+#root {
+  min-height: 100% !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* Ensure components with fixed positioning don't prevent scrolling */
+.experiment-layout-fullscreen {
+  min-height: 100vh !important;
+  overflow-y: auto !important;
+}
+
+.experiment-background-canvas {
+  overflow: auto !important;
+}
+
+/* SCROLLBAR STYLING - Simplified for black and white theme */
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: calc(var(--scrollbar-width) / 2);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color-1);
+  border-radius: calc(var(--scrollbar-width) / 2);
+  box-shadow: var(--scrollbar-glow);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-color-2);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color-1) var(--scrollbar-track);
 }

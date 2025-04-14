@@ -8,6 +8,9 @@ import './ExperimentCard.css';
 const ExperimentCard = ({ experiment, isHovered, onMouseEnter, onMouseLeave }) => {
   const { id, slug, title, description, tags, thumbnail, Component } = experiment;
 
+  // Color palette for tags
+  const colors = ['#0300F0', '#00F0D4', '#FF0D66', '#FCFF00', '#000000'];
+
   return (
     <Box
       className={`experiment-card-wrapper experiment-${id}`}
@@ -61,11 +64,27 @@ const ExperimentCard = ({ experiment, isHovered, onMouseEnter, onMouseLeave }) =
                 {description}
               </Text>
               <Group gap="xs" wrap="wrap">
-                {(tags || []).slice(0, 4).map(tag => (
-                  <Badge key={tag} size="sm" radius="sm">
-                    {tag}
-                  </Badge>
-                ))}
+                {(tags || []).slice(0, 4).map((tag, index) => {
+                  const colorIndex = index % colors.length;
+                  const tagColor = colors[colorIndex];
+                  const isDarkText = tagColor === '#FCFF00' || tagColor === '#00F0D4';
+                  
+                  return (
+                    <Badge 
+                      key={tag} 
+                      size="sm" 
+                      radius="sm"
+                      styles={(theme) => ({
+                        root: {
+                          backgroundColor: tagColor,
+                          color: isDarkText ? '#000000' : '#FFFFFF',
+                        }
+                      })}
+                    >
+                      {tag}
+                    </Badge>
+                  );
+                })}
               </Group>
             </Box>
           </Stack>

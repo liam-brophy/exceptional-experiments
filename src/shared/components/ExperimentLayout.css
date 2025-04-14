@@ -7,8 +7,9 @@
   /* Takes up viewport height, position relative allows absolute/fixed children */
   min-height: 100vh;
   position: relative;
-  /* Prevent horizontal scrollbars if children slightly exceed */
+  /* Allow vertical scrolling while preventing horizontal scrollbars */
   overflow-x: hidden;
+  overflow-y: auto;
   transition: background-color var(--transition-speed);
 }
 
@@ -16,12 +17,13 @@
   position: fixed; /* Take out of flow, position relative to viewport */
   top: 0;
   left: 0;
-  width: 100vw;  /* Full viewport width */
-  height: 100vh; /* Full viewport height */
+  width: 100%;  /* Full width */
+  height: 100%; /* Full height */
   z-index: 1;    /* Behind header/footer */
   background-color: var(--background-color); /* Use theme variable */
   /* Ensure child (Experiment1) can fill it */
   display: flex; /* Use flex to make child fill */
+  overflow: auto; /* Allow scrolling within the canvas */
 }
 
 .experiment-header-overlay {
