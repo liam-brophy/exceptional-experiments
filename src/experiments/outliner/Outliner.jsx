@@ -2,37 +2,197 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Outliner.css';
 
 /**
- * Outliner Experiment
- * Processes images to generate stylized outlines and representations
+ * Outliner Experiment - Simplified with Drag and Drop
+ * Processes images to generate stylized outlines with minimal UI
  */
 function Outliner() {
   const [image, setImage] = useState(null);
-  const [imageUrl, setImageUrl] = useState('');
   const [threshold, setThreshold] = useState(128);
-  const [segments, setSegments] = useState(5);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [worker, setWorker] = useState(null);
+  const [imageSizeWarning, setImageSizeWarning] = useState(false);
+  const [debugInfo, setDebugInfo] = useState({});
+  const [processingProgress, setProcessingProgress] = useState(0);
   
-  const originalCanvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const dropAreaRef = useRef(null);
+  const processingTimerRef = useRef(null);
+  const debouncedProcessRef = useRef(null);
 
-  // Effect to process the image when it changes
+  // Initialize web worker
   useEffect(() => {
-    if (image) {
-      processImage();
-    }
-  }, [image, threshold, segments]);
+    console.log('[Outliner] Initializing web worker');
+    // Create the worker
+    const imageWorker = new Worker(new URL('./workers/imageProcessor.worker.js', import.meta.url));
+    
+    // Set up message handler
+    imageWorker.onmessage = (e) => {
+      const { outlinePoints, success, error, processingTime, outlineCount, downsampleFactor, type, percentComplete, outlinesFound } = e.data;
+      
+      // Handle progress updates from worker
+      if (type === 'progress') {
+        setProcessingProgress(percentComplete);
+        setDebugInfo(prev => ({
+          ...prev,
+          outlinesFound: outlinesFound,
+          progressPercent: percentComplete
+        }));
+        return;
+      }
+      
+      if (success) {
+        console.log(`[Outliner] Worker completed successfully in ${processingTime}ms with ${outlineCount} outlines`);
+        const drawStartTime = performance.now();
+        drawOutlines(outlinePoints);
+        const drawEndTime = performance.now();
+        console.log(`[Outliner] Drawing outlines took ${(drawEndTime - drawStartTime).toFixed(2)}ms`);
+        
+        setDebugInfo(prev => ({
+          ...prev,
+          workerProcessingTime: processingTime,
+          outlineCount,
+          drawingTime: (drawEndTime - drawStartTime).toFixed(2),
+          downsampleFactor: downsampleFactor || 1
+        }));
+      } else {
+        console.error("[Outliner] Error from worker:", error);
+        setDebugInfo(prev => ({
+          ...prev,
+          workerError: error
+        }));
+      }
+      
+      // Calculate total processing time
+      if (processingTimerRef.current) {
+        const totalTime = performance.now() - processingTimerRef.current;
+        console.log(`[Outliner] Total processing time including worker: ${totalTime.toFixed(2)}ms`);
+        setDebugInfo(prev => ({
+          ...prev,
+          totalProcessingTime: totalTime.toFixed(2)
+        }));
+      }
+      
+      setProcessingProgress(0);
+      setIsProcessing(false);
+    };
+    
+    setWorker(imageWorker);
+    
+    // Cleanup function
+    return () => {
+      console.log('[Outliner] Terminating worker');
+      imageWorker.terminate();
+      
+      if (debouncedProcessRef.current) {
+        clearTimeout(debouncedProcessRef.current);
+      }
+    };
+  }, []);
 
-  // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  // Process the image when it changes or threshold changes, with debounce
+  useEffect(() => {
+    if (image && worker) {
+      // Clear any existing timeout
+      if (debouncedProcessRef.current) {
+        clearTimeout(debouncedProcessRef.current);
+      }
+      
+      // For threshold changes, use debounce to prevent too many worker calls
+      if (isProcessing) {
+        console.log('[Outliner] Skipping processing while already in progress');
+        return;
+      }
+      
+      console.log(`[Outliner] Image or threshold changed (${threshold}), scheduling processing...`);
+      
+      // Use artificial progress indication for better UX
+      setProcessingProgress(10);
+      
+      debouncedProcessRef.current = setTimeout(() => {
+        processImage();
+      }, 300); // 300ms debounce
+    }
+  }, [image, threshold, worker]);
+
+  // Set up drag and drop event listeners
+  useEffect(() => {
+    const dropArea = dropAreaRef.current;
+    
+    const handleDragOver = (e) => {
+      e.preventDefault();
+      setIsDragging(true);
+    };
+    
+    const handleDragEnter = (e) => {
+      e.preventDefault();
+      setIsDragging(true);
+    };
+    
+    const handleDragLeave = () => {
+      setIsDragging(false);
+    };
+    
+    const handleDrop = (e) => {
+      e.preventDefault();
+      setIsDragging(false);
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.type.match('image.*')) {
+          handleImageFile(file);
+        }
+      }
+    };
+    
+    // Add event listeners to the drop area
+    if (dropArea) {
+      dropArea.addEventListener('dragover', handleDragOver);
+      dropArea.addEventListener('dragenter', handleDragEnter);
+      dropArea.addEventListener('dragleave', handleDragLeave);
+      dropArea.addEventListener('drop', handleDrop);
+      
+      // Clean up event listeners
+      return () => {
+        dropArea.removeEventListener('dragover', handleDragOver);
+        dropArea.removeEventListener('dragenter', handleDragEnter);
+        dropArea.removeEventListener('dragleave', handleDragLeave);
+        dropArea.removeEventListener('drop', handleDrop);
+      };
+    }
+  }, []);
+
+  // Handle the image file from drag and drop
+  const handleImageFile = (file) => {
     if (file) {
+      console.log(`[Outliner] Loading image file: ${file.name}, size: ${(file.size / 1024).toFixed(2)}KB`);
+      const loadStartTime = performance.now();
+      
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
+          const loadEndTime = performance.now();
+          console.log(`[Outliner] Image loaded in ${(loadEndTime - loadStartTime).toFixed(2)}ms, dimensions: ${img.width}x${img.height} (${img.width * img.height} pixels)`);
+          
+          setDebugInfo({
+            fileName: file.name,
+            fileSize: (file.size / 1024).toFixed(2) + 'KB',
+            dimensions: `${img.width}x${img.height}`,
+            pixelCount: img.width * img.height,
+            loadTime: (loadEndTime - loadStartTime).toFixed(2)
+          });
+          
+          // Add size check to prevent processing extremely large images
+          if (img.width * img.height > 16000000) { // 16 megapixels
+            console.warn(`[Outliner] Very large image detected: ${img.width}x${img.height} (${img.width * img.height} pixels)`);
+            setImageSizeWarning(true);
+          } else {
+            setImageSizeWarning(false);
+          }
+          
           setImage(img);
-          setImageUrl(event.target.result);
         };
         img.src = event.target.result;
       };
@@ -40,285 +200,218 @@ function Outliner() {
     }
   };
 
-  // Handle URL paste
-  const handleUrlPaste = (e) => {
-    e.preventDefault();
-    if (!e.target.value) return;
-
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.onload = () => {
-      setImage(img);
-      setImageUrl(e.target.value);
+  // Draw the outlines on the canvas
+  const drawOutlines = (outlinePoints) => {
+    if (!resultCanvasRef.current) return;
+    
+    const resultCanvas = resultCanvasRef.current;
+    const resultCtx = resultCanvas.getContext('2d');
+    const scale = parseFloat(resultCanvas.dataset.scale || 1);
+    
+    // Draw the outlines
+    resultCtx.lineJoin = 'round';
+    resultCtx.lineCap = 'round';
+    resultCtx.strokeStyle = '#000000';
+    resultCtx.lineWidth = 2;
+    
+    let totalPoints = 0;
+    
+    // If there are too many outlines, batch drawing to prevent UI freeze
+    const batchSize = 1000;
+    let processedOutlines = 0;
+    
+    const drawBatch = (startIndex) => {
+      const endIndex = Math.min(startIndex + batchSize, outlinePoints.length);
+      
+      for (let i = startIndex; i < endIndex; i++) {
+        const points = outlinePoints[i];
+        if (points && points.length > 0) {
+          resultCtx.beginPath();
+          resultCtx.moveTo(points[0].x * scale, points[0].y * scale);
+          for (let j = 1; j < points.length; j++) {
+            resultCtx.lineTo(points[j].x * scale, points[j].y * scale);
+          }
+          resultCtx.stroke();
+          totalPoints += points.length;
+        }
+      }
+      
+      processedOutlines = endIndex;
+      
+      // If more to process, schedule next batch
+      if (processedOutlines < outlinePoints.length) {
+        setProcessingProgress(Math.round((processedOutlines / outlinePoints.length) * 100));
+        window.requestAnimationFrame(() => drawBatch(processedOutlines));
+      } else {
+        console.log(`[Outliner] Drew ${outlinePoints.length} outlines with ${totalPoints} total points`);
+        setProcessingProgress(0);
+      }
     };
-    img.onerror = () => {
-      alert('Error loading image. Please try another URL or upload a file.');
-    };
-    img.src = e.target.value;
+    
+    // Start the batch drawing process
+    drawBatch(0);
   };
 
   // Process the image to generate outlines
   const processImage = async () => {
-    if (!image) return;
+    if (!image || !worker || isProcessing) return;
     setIsProcessing(true);
+    setProcessingProgress(20); // Start at 20% for better UX
+    
+    processingTimerRef.current = performance.now();
+    console.log('[Outliner] Starting image processing');
 
     try {
-      // Draw original image
-      const origCanvas = originalCanvasRef.current;
-      const origCtx = origCanvas.getContext('2d', { willReadFrequently: true });
-      
-      // Set thumbnail preview dimensions
-      const maxPreviewSize = 150;
-      const scale = Math.min(1, maxPreviewSize / image.width, maxPreviewSize / image.height);
-      
-      origCanvas.width = image.width * scale;
-      origCanvas.height = image.height * scale;
-      origCtx.drawImage(image, 0, 0, origCanvas.width, origCanvas.height);
-
       // Process for result outline
       const resultCanvas = resultCanvasRef.current;
       
-      // Set result canvas to a larger size
-      const maxResultWidth = Math.min(window.innerWidth * 0.8, 1200);
-      const maxResultHeight = Math.min(window.innerHeight * 0.7, 800);
-      const resultScale = Math.min(1, maxResultWidth / image.width, maxResultHeight / image.height);
+      // Set result canvas size based on image dimensions
+      const maxWidth = Math.min(window.innerWidth * 0.8, 800);
+      const maxHeight = Math.min(window.innerHeight * 0.7, 600);
+      const scale = Math.min(1, maxWidth / image.width, maxHeight / image.height);
       
-      resultCanvas.width = image.width * resultScale;
-      resultCanvas.height = image.height * resultScale;
+      resultCanvas.width = image.width * scale;
+      resultCanvas.height = image.height * scale;
       
-      // Create a temporary canvas for processing at full size
+      console.log(`[Outliner] Canvas resized to ${resultCanvas.width}x${resultCanvas.height}, scale: ${scale}`);
+      
+      const canvasSetupTime = performance.now();
+      
+      // Create a temporary canvas for processing
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = image.width;
       tempCanvas.height = image.height;
       const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
       tempCtx.drawImage(image, 0, 0, image.width, image.height);
       
-      // Apply processing to the temporary canvas
+      console.log('[Outliner] Temp canvas created and image drawn');
+      setProcessingProgress(30);
+      
+      // Get image data and send to worker
+      console.log('[Outliner] Getting image data from canvas');
+      const getImageDataStart = performance.now();
+      
       const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-      const binaryData = applyThreshold(imageData, threshold);
       
-      // Extract outlines
-      const outlinePoints = traceOutline(binaryData, tempCanvas.width, tempCanvas.height);
+      const getImageDataEnd = performance.now();
+      console.log(`[Outliner] Image data retrieved in ${(getImageDataEnd - getImageDataStart).toFixed(2)}ms`);
       
-      // Draw to the result canvas with proper scaling
+      // Store scale for later use in drawing
+      resultCanvas.dataset.scale = scale;
+      
+      // Draw a faint version of the original image as background
       const resultCtx = resultCanvas.getContext('2d');
       resultCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
-      
-      // Optional: Draw a subtle version of the original image as background
       resultCtx.globalAlpha = 0.1;
       resultCtx.drawImage(image, 0, 0, resultCanvas.width, resultCanvas.height);
       resultCtx.globalAlpha = 1.0;
       
-      // Draw the outlines scaled to the result canvas size
-      resultCtx.strokeStyle = '#000000';
-      resultCtx.lineWidth = 2;
+      // Calculate memory usage estimate
+      const imageSizeBytes = imageData.data.length;
+      const memorySizeMB = (imageSizeBytes / (1024 * 1024)).toFixed(2);
+      console.log(`[Outliner] Sending image data to worker: ${memorySizeMB}MB (${imageSizeBytes} bytes)`);
       
-      outlinePoints.forEach(points => {
-        if (points.length > 0) {
-          resultCtx.beginPath();
-          resultCtx.moveTo(points[0].x * resultScale, points[0].y * resultScale);
-          for (let i = 1; i < points.length; i++) {
-            resultCtx.lineTo(points[i].x * resultScale, points[i].y * resultScale);
-          }
-          resultCtx.stroke();
-        }
+      setDebugInfo(prev => ({
+        ...prev,
+        imageDataSize: memorySizeMB + 'MB',
+        canvasSetupTime: (getImageDataEnd - canvasSetupTime).toFixed(2)
+      }));
+      
+      setProcessingProgress(50); // Update progress before sending to worker
+      
+      // Send data to worker for processing
+      const workerSendTime = performance.now();
+      worker.postMessage({
+        imageData: imageData.data,
+        threshold,
+        width: tempCanvas.width,
+        height: tempCanvas.height
       });
+      console.log(`[Outliner] Data sent to worker at ${workerSendTime.toFixed(2)}ms`);
       
     } catch (error) {
-      console.error("Error processing image:", error);
-    } finally {
+      console.error("[Outliner] Error processing image:", error);
+      console.error(error.stack);
+      setDebugInfo(prev => ({
+        ...prev,
+        processingError: error.message
+      }));
       setIsProcessing(false);
+      setProcessingProgress(0);
     }
-  };
-
-  // Apply threshold to create a binary image
-  const applyThreshold = (imageData, thresholdValue) => {
-    const data = imageData.data;
-    const binaryData = new Uint8ClampedArray(imageData.width * imageData.height);
-    
-    for (let i = 0; i < data.length; i += 4) {
-      // Convert to grayscale and apply threshold
-      const gray = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
-      const pixel = Math.floor(i / 4);
-      binaryData[pixel] = gray < thresholdValue ? 0 : 255;
-    }
-    
-    return binaryData;
-  };
-
-  // Trace the outline using a simple boundary following algorithm
-  const traceOutline = (binaryData, width, height, offsetX = 0, offsetY = 0) => {
-    // A simple version of Moore neighborhood tracing algorithm
-    const visited = new Set();
-    const allOutlines = [];
-    
-    const directions = [
-      { dx: 0, dy: -1 }, // N
-      { dx: 1, dy: -1 }, // NE
-      { dx: 1, dy: 0 },  // E
-      { dx: 1, dy: 1 },  // SE
-      { dx: 0, dy: 1 },  // S
-      { dx: -1, dy: 1 }, // SW
-      { dx: -1, dy: 0 }, // W
-      { dx: -1, dy: -1 } // NW
-    ];
-
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 1; x < width - 1; x++) {
-        const pixelIndex = y * width + x;
-        const pixelKey = `${x},${y}`;
-        
-        // Find a boundary pixel (foreground with background neighbor)
-        if (binaryData[pixelIndex] === 0 && !visited.has(pixelKey)) {
-          // Check if it's a boundary pixel
-          let isBoundary = false;
-          for (const dir of directions) {
-            const nx = x + dir.dx;
-            const ny = y + dir.dy;
-            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-              const neighborIndex = ny * width + nx;
-              if (binaryData[neighborIndex] === 255) {
-                isBoundary = true;
-                break;
-              }
-            }
-          }
-          
-          if (isBoundary) {
-            // Start boundary tracing
-            const outlinePoints = [];
-            let currentX = x;
-            let currentY = y;
-            let startDir = 0; // Start with North
-            
-            do {
-              visited.add(`${currentX},${currentY}`);
-              outlinePoints.push({ x: currentX + offsetX, y: currentY + offsetY });
-              
-              // Look for the next boundary pixel
-              let found = false;
-              for (let i = 0; i < directions.length; i++) {
-                const checkDir = (startDir + i) % 8;
-                const dir = directions[checkDir];
-                const nx = currentX + dir.dx;
-                const ny = currentY + dir.dy;
-                
-                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                  const neighborIndex = ny * width + nx;
-                  if (binaryData[neighborIndex] === 0) {
-                    currentX = nx;
-                    currentY = ny;
-                    startDir = (checkDir + 6) % 8; // Turn counter-clockwise
-                    found = true;
-                    break;
-                  }
-                }
-              }
-              
-              if (!found) break;
-              
-            } while (outlinePoints.length < 10000 && (currentX !== x || currentY !== y));
-            
-            allOutlines.push(outlinePoints);
-          }
-        }
-      }
-    }
-    
-    return allOutlines;
   };
 
   return (
     <div className="outliner-container">
-      <div className="upload-section">
-        <h3>Image Outliner</h3>
-        
-        <div className="input-row">
-          <input 
-            type="file" 
-            id="image-upload" 
-            accept="image/*" 
-            onChange={handleImageUpload}
-            ref={fileInputRef}
-            className="file-input"
-          />
-        </div>
-        
-        <div className="input-row">
-          <input 
-            type="text" 
-            id="image-url" 
-            placeholder="Or paste an image URL and press Enter"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleUrlPaste({ preventDefault: () => {}, target: { value: imageUrl } })}
-            className="url-input"
-          />
-        </div>
-      </div>
-      
-      {!image ? (
-        <div className="upload-prompt">
-          <p>Upload an image to begin</p>
-        </div>
-      ) : (
-        <div className="content-area">
-          <div className="settings-preview">
-            <div className="preview-container">
-              <h4>Original</h4>
-              <canvas ref={originalCanvasRef} className="preview-canvas"></canvas>
-            </div>
+      <div className="outliner-content">
+        {image && (
+          <div className="controls-section">
+            <input 
+              type="range" 
+              min="0"
+              max="255"
+              value={threshold}
+              onChange={(e) => setThreshold(parseInt(e.target.value))}
+              className="threshold-slider"
+              disabled={isProcessing}
+            />
+            <span className="threshold-value">Threshold: {threshold}</span>
             
-            <div className="settings-container">
-              <h4>Settings</h4>
-              <div className="setting-row">
-                <label htmlFor="threshold">Threshold: {threshold}</label>
-                <input 
-                  type="range" 
-                  id="threshold"
-                  min="0"
-                  max="255"
-                  step="1"
-                  value={threshold}
-                  onChange={(e) => setThreshold(parseInt(e.target.value))}
-                />
-              </div>
-              
-              <div className="setting-row">
-                <label htmlFor="segments">Detail Level: {segments}</label>
-                <input 
-                  type="range" 
-                  id="segments"
-                  min="1"
-                  max="20"
-                  step="1"
-                  value={segments}
-                  onChange={(e) => setSegments(parseInt(e.target.value))}
-                />
-              </div>
-              
-              <button 
-                className="process-button" 
-                onClick={processImage}
-                disabled={isProcessing}
-              >
-                {isProcessing ? 'Processing...' : 'Redraw'}
-              </button>
-            </div>
-          </div>
-          
-          <div className="result-container">
-            {isProcessing && (
-              <div className="loading-overlay">
-                <div className="loading-spinner"></div>
-                <div className="loading-text">Processing image...</div>
+            {/* Debug information section - only visible in development */}
+            {process.env.NODE_ENV === 'development' && Object.keys(debugInfo).length > 0 && (
+              <div className="debug-info">
+                <h4>Debug Info</h4>
+                <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
               </div>
             )}
-            <h4>Outlined Result</h4>
-            <canvas ref={resultCanvasRef} className="result-canvas"></canvas>
           </div>
+        )}
+        
+        <div 
+          ref={dropAreaRef}
+          className={`drop-area ${isDragging ? 'dragging' : ''} ${image ? 'has-image' : ''}`}
+        >
+          {isProcessing && (
+            <div className="processing-indicator">
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${processingProgress}%` }}
+                ></div>
+              </div>
+              <div className="processing-text">
+                Processing... {processingProgress > 0 ? `${processingProgress}%` : ''}
+                {process.env.NODE_ENV === 'development' && (
+                  <span className="processing-details">
+                    {debugInfo.pixelCount && `${(debugInfo.pixelCount / 1000000).toFixed(2)}MP image`}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {imageSizeWarning && (
+            <div className="warning-message">
+              Warning: Large image detected. Processing may be slow or cause memory issues.
+            </div>
+          )}
+          
+          {image ? (
+            <canvas ref={resultCanvasRef} className="result-canvas"></canvas>
+          ) : (
+            <div className="drop-prompt">
+              <div className="drop-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 20H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <p>Drag & drop an image here</p>
+              <p className="drop-subtitle">Generate an outline from your image</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

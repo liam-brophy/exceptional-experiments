@@ -64,7 +64,7 @@ const experimentList = [
     title: 'Outliner',
     description: 'Create artistic outlines with customizable styles and animations.',
     component: Outliner,
-    thumbnail: '/thumbnails/outliner.png', // Placeholder - you may need to create this image
+    thumbnail: '/thumbnails/experiment2.png', // Using an existing image as fallback
     tags: ['animation', 'generative'],
     createdAt: '2025-03-12',
   },
@@ -74,7 +74,7 @@ const experimentList = [
     title: 'Chained',
     description: 'Create mesmerizing linked chain patterns that react to your movements.',
     component: Chained,
-    thumbnail: '/thumbnails/chained.png',
+    thumbnail: '/thumbnails/experiment2.png', // Using an existing image as fallback
     tags: ['animation', 'physics'],
     createdAt: '2025-04-10',
   },

@@ -147,7 +147,7 @@ const HomePage = () => {
           <Text className="laboratory-title" align="center">
                Laboratory
           </Text>
-          <Text color="dimmed" size="sm" align="center" italic>
+          <Text color="dimmed" size="sm" align="center" italic="true">
             updated (almost) everyday
           </Text>
           
@@ -165,22 +165,22 @@ const HomePage = () => {
                 variant={sortOption === 'newest' ? "filled" : "outline"}
                 onClick={() => setSortOption('newest')}
                 radius="md"
-                leftIcon={<IconArrowUp size={16} />}
                 className="sort-button"
                 size="sm"
                 color="dark"
               >
+                <IconArrowUp size={16} style={{ marginRight: '8px' }} />
                 New
               </Button>
               <Button
                 variant={sortOption === 'oldest' ? "filled" : "outline"}
                 onClick={() => setSortOption('oldest')}
                 radius="md"
-                leftIcon={<IconArrowDown size={16} />}
                 className="sort-button"
                 size="sm"
                 color="dark"
               >
+                <IconArrowDown size={16} style={{ marginRight: '8px' }} />
                 Old
               </Button>
             </Group>
