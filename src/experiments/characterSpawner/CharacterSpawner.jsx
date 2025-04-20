@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CharacterSpawner.css';
 
-const GRAVITY = 0.98; // Gravity constant
-const ENERGY_LOSS = 0.8; // Bounce elasticity
+const GRAVITY = 0.25; // Reduced gravity constant (was 0.98)
+const ENERGY_LOSS = 0.85; // Slightly increased bounce elasticity
 const FRICTION = 0.99; // Air resistance
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const EMOJIS = ['😀', '😍', '🚀', '🎉', '🌈', '✨', '💖', '🔥', '🎁', '🎮', '🍕', '🍦', '🦄', '🐱', '🐶', '🌟', '🌺', '🏆', '🎯', '🎨', '🎭', '🎼', '📱', '💻', '🎧'];
 const FONTS = ['Roboto', 'Arial', 'Courier New', 'Georgia', 'Times New Roman'];
+// Updated confetti colors to match filter/tag colors
 const CONFETTI_COLORS = [
-  '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', 
-  '#536DFE', '#448AFF', '#40C4FF', '#18FFFF', 
-  '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', 
-  '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
+  '#0300F0', '#00F0D4', '#FF0D66', '#FCFF00', '#000000'
 ];
-const CONFETTI_SHAPES = ['square', 'circle', 'triangle'];
+// Removed random shapes - we'll use sprinkles only
 const MIN_CONFETTI_COUNT = 10; // Minimum confetti pieces for a short click
 const MAX_CONFETTI_COUNT = 60; // Maximum confetti pieces for a long hold
 const CONFETTI_LIFETIME = 5000; // Increased lifetime of confetti in milliseconds (was 2000)
@@ -39,7 +37,6 @@ const CharacterSpawner = () => {
   // Generate a random confetti piece
   const createConfettiPiece = (x, y) => {
     const randomColor = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
-    const randomShape = CONFETTI_SHAPES[Math.floor(Math.random() * CONFETTI_SHAPES.length)];
     const angle = Math.random() * Math.PI * 2; // Random angle for direction
     const speed = Math.random() * 0.8 + 0.2; // Dramatically reduced speed between 0.2 and 1 (was 1-3)
     
@@ -51,7 +48,6 @@ const CharacterSpawner = () => {
       vy: Math.sin(angle) * speed - 0.5, // Very gentle initial upward boost (was -1)
       size: Math.random() * 6 + 4, // Size between 4 and 10 pixels
       color: randomColor,
-      shape: randomShape,
       rotation: Math.random() * 360,
       rotationSpeed: (Math.random() * 2 - 1) * 0.5, // Very slow rotation (was 10-5)
       createdAt: Date.now(),
@@ -83,9 +79,9 @@ const CharacterSpawner = () => {
       id: Date.now(),
       x,
       y,
-      vx: Math.random() * 4 - 2, // Random initial velocity x
-      vy: Math.random() * 4 - 2, // Random initial velocity y
-      radius: Math.min(Math.max(10, holdDuration / 50), 200), // Radius increases with hold duration, capped at 200 (was 50)
+      vx: Math.random() * 2 - 1, // Reduced random initial velocity x (was 4-2)
+      vy: Math.random() * 1 - 0.5, // Reduced random initial velocity y (was 4-2)
+      radius: Math.min(Math.max(10, holdDuration / 50), 200), // Radius increases with hold duration, capped at 200
       character,
       font: selectedFont,
     };
@@ -314,22 +310,31 @@ const CharacterSpawner = () => {
           {ball.character}
         </div>
       ))}
-      {confetti.map((piece) => (
-        <div
-          key={piece.id}
-          style={{
-            position: 'absolute',
-            left: piece.x,
-            top: piece.y,
-            width: `${piece.size}px`,
-            height: `${piece.size}px`,
-            backgroundColor: piece.color,
-            transform: `translate(-50%, -50%) rotate(${piece.rotation}deg)`,
-            borderRadius: piece.shape === 'circle' ? '50%' : '0',
-            clipPath: piece.shape === 'triangle' ? 'polygon(50% 0%, 0% 100%, 100% 100%)' : 'none',
-          }}
-        ></div>
-      ))}
+      {confetti.map((piece) => {
+        // Calculate opacity based on lifetime - fade out gradually
+        const age = Date.now() - piece.createdAt;
+        const lifePercentage = age / CONFETTI_LIFETIME;
+        // Start at full opacity, then fade out in the last 70% of its lifetime
+        const opacity = lifePercentage < 0.3 ? 1 : Math.max(0, 1 - ((lifePercentage - 0.3) / 0.7));
+                
+        return (
+          <div
+            key={piece.id}
+            style={{
+              position: 'absolute',
+              left: piece.x,
+              top: piece.y,
+              width: `${piece.size * 0.8}px`,
+              height: `${piece.size * 0.25}px`, // Create elongated shape for sprinkles
+              backgroundColor: piece.color,
+              transform: `translate(-50%, -50%) rotate(${piece.rotation}deg)`,
+              borderRadius: `${piece.size * 0.125}px`, // Rounded ends for sprinkle shape
+              opacity,
+              transition: 'opacity 300ms ease-out', // Smooth transition for opacity changes
+            }}
+          ></div>
+        );
+      })}
     </div>
   );
 };
