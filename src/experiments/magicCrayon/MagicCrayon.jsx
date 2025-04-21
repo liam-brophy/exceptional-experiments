@@ -1,18 +1,24 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './MagicCrayon.css';
 import p5 from 'p5';
+import CustomSlider from './CustomSlider';
 
 const MagicCrayon = () => {
   const sketchRef = useRef(null);
   const p5InstanceRef = useRef(null);
   const [brushSize, setBrushSize] = useState(25);
   const [fadeSpeed, setFadeSpeed] = useState(5);
-  const [blurAmount, setBlurAmount] = useState(0); 
+  const [controlsVisible, setControlsVisible] = useState(true);
   
-  // Color state management
-  const [currentColorHex, setCurrentColorHex] = useState('#64C8FF');
-  const [backgroundColorHex, setBackgroundColorHex] = useState('#1E1E23');
-  const [recentColors, setRecentColors] = useState(['#64C8FF', '#FF7F50', '#7B68EE', '#20B2AA', '#FFB6C1']);
+  // Color state management with single recentColors array
+  const [currentColorHex, setCurrentColorHex] = useState('#FFFFFF');
+  const [backgroundColorHex, setBackgroundColorHex] = useState('#121212');
+  const [recentColors, setRecentColors] = useState(['#FFFFFF', '#CCCCCC', '#888888', '#444444', '#000000', '#121212']);
+  
+  // Toggle controls visibility
+  const toggleControls = () => {
+    setControlsVisible(prev => !prev);
+  };
 
   // Helper functions for color conversion
   const hexToRgb = (hex) => {
@@ -27,7 +33,7 @@ const MagicCrayon = () => {
     return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
   };
 
-  // Add a new color to recent colors history
+  // Add a new color to recent colors history - shared between brush and background
   const addToRecentColors = (colorHex) => {
     setRecentColors(prevColors => {
       const filteredColors = prevColors.filter(c => c !== colorHex);
@@ -41,6 +47,12 @@ const MagicCrayon = () => {
     addToRecentColors(colorHex);
   };
 
+  // Handle background color change
+  const handleBgColorChange = (colorHex) => {
+    setBackgroundColorHex(colorHex);
+    addToRecentColors(colorHex);
+  };
+
   useEffect(() => {
     if (sketchRef.current && !p5InstanceRef.current) {
       const sketch = new p5((p) => {
@@ -49,8 +61,7 @@ const MagicCrayon = () => {
           brushSize,
           fadeSpeed,
           currentColor: hexToRgb(currentColorHex),
-          backgroundColor: hexToRgb(backgroundColorHex),
-          blurAmount
+          backgroundColor: hexToRgb(backgroundColorHex)
         };
         
         let paths = [];
@@ -58,8 +69,6 @@ const MagicCrayon = () => {
         
         // Main drawing buffer
         let mainBuffer;
-        // Blur effect buffer
-        let blurBuffer;
         
         // Initialize the canvas and buffers
         p.setup = () => {
@@ -72,10 +81,6 @@ const MagicCrayon = () => {
           // Create main drawing buffer
           mainBuffer = p.createGraphics(p.width, p.height);
           mainBuffer.colorMode(p.RGB, 255, 255, 255, 1);
-          
-          // Create blur buffer
-          blurBuffer = p.createGraphics(p.width, p.height);
-          blurBuffer.colorMode(p.RGB, 255, 255, 255, 1);
           
           // Set initial background
           p.background(...settings.backgroundColor);
@@ -110,57 +115,12 @@ const MagicCrayon = () => {
             drawOilPastelStroke(mainBuffer, currentPath, currentPath.color, currentPath.thickness, 1.0);
           }
           
-          // Apply blur effect if needed
-          if (settings.blurAmount > 0) {
-            // Custom blur implementation 
-            applyStackBlur(settings.blurAmount);
-            
-            // Display the blurred buffer
-            p.image(blurBuffer, 0, 0);
-          } else {
-            // Display the main buffer directly (no blur)
-            p.image(mainBuffer, 0, 0);
-          }
+          // Display the main buffer
+          p.image(mainBuffer, 0, 0);
           
           // Gradually remove old paths based on fade speed
           if (p.frameCount % Math.max(10, 60 - settings.fadeSpeed * 5) === 0 && paths.length > 0) {
             paths.shift();
-          }
-        };
-        
-        // Apply a stack blur effect (more efficient than p5's built-in filter)
-        const applyStackBlur = (amount) => {
-          // Copy main buffer to blur buffer
-          blurBuffer.clear();
-          blurBuffer.image(mainBuffer, 0, 0);
-          
-          // Apply a single blur with a safe amount
-          if (amount > 0) {
-            // Use a single blur pass with a limited strength to prevent crashes
-            // p5's BLUR filter can be unstable with higher values or multiple passes
-            const safeBlurAmount = Math.min(3, amount / 2); // Cap the blur amount
-            
-            try {
-              // Apply blur with a safe value
-              blurBuffer.filter(p.BLUR, safeBlurAmount);
-              
-              // For stronger blur effects, we'll reduce the opacity instead of
-              // applying multiple passes, which is safer
-              if (amount > 3) {
-                // Add a slightly transparent overlay to simulate stronger blur
-                blurBuffer.fill(
-                  settings.backgroundColor[0], 
-                  settings.backgroundColor[1], 
-                  settings.backgroundColor[2], 
-                  amount * 0.05
-                );
-                blurBuffer.noStroke();
-                blurBuffer.rect(0, 0, p.width, p.height);
-              }
-            } catch (error) {
-              console.warn("Blur effect failed, falling back to unblurred display", error);
-              blurBuffer.image(mainBuffer, 0, 0);
-            }
           }
         };
         
@@ -262,7 +222,6 @@ const MagicCrayon = () => {
             paths = [];
             p.background(...settings.backgroundColor);
             mainBuffer.background(...settings.backgroundColor);
-            blurBuffer.background(...settings.backgroundColor);
           }
         };
         
@@ -275,12 +234,6 @@ const MagicCrayon = () => {
           newBuffer.image(mainBuffer, 0, 0);
           mainBuffer.remove();
           mainBuffer = newBuffer;
-          
-          // Create new blur buffer at new window size
-          const newBlurBuffer = p.createGraphics(p.width, p.height);
-          newBlurBuffer.colorMode(p.RGB, 255, 255, 255, 1);
-          blurBuffer.remove();
-          blurBuffer = newBlurBuffer;
           
           // Redraw background
           mainBuffer.background(...settings.backgroundColor);
@@ -298,7 +251,6 @@ const MagicCrayon = () => {
                prevBgColor[2] !== newSettings.backgroundColor[2])) {
             p.background(...settings.backgroundColor);
             mainBuffer.background(...settings.backgroundColor);
-            blurBuffer.background(...settings.backgroundColor);
           }
         };
       }, sketchRef.current);
@@ -324,11 +276,10 @@ const MagicCrayon = () => {
         brushSize,
         fadeSpeed,
         currentColor: hexToRgb(currentColorHex),
-        backgroundColor: hexToRgb(backgroundColorHex),
-        blurAmount
+        backgroundColor: hexToRgb(backgroundColorHex)
       });
     }
-  }, [brushSize, fadeSpeed, currentColorHex, backgroundColorHex, blurAmount]);
+  }, [brushSize, fadeSpeed, currentColorHex, backgroundColorHex]);
 
   return (
     <div className="magic-crayon-container">
@@ -337,123 +288,93 @@ const MagicCrayon = () => {
         className="canvas-container"
       ></div>
       
-      <div className="controls simple-controls">
-        {/* Brush Size Control */}
-        <div className="control-group">
-          <label>Brush Size: {brushSize}px</label>
-          <input 
-            type="range" 
-            min="5" 
-            max="50" 
-            value={brushSize} 
-            onChange={(e) => setBrushSize(Number(e.target.value))}
-          />
-        </div>
-        
-        {/* Fade Speed Control */}
-        <div className="control-group">
-          <label>Fade Speed: {fadeSpeed}</label>
-          <input 
-            type="range" 
-            min="1" 
-            max="10" 
-            value={fadeSpeed} 
-            onChange={(e) => setFadeSpeed(Number(e.target.value))}
-          />
-        </div>
-        
-        {/* Blur Effect Control */}
-        <div className="control-group">
-          <label>Blur Effect: {blurAmount > 0 ? blurAmount : 'Off'}</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="10" 
-            value={blurAmount} 
-            onChange={(e) => setBlurAmount(Number(e.target.value))}
-          />
-        </div>
-        
-        {/* Brush Color Selection */}
-        <div className="control-group">
-          <label>Brush Color</label>
-          <div className="color-picker-container">
-            <input
-              type="color"
-              value={currentColorHex}
-              onChange={(e) => handleBrushColorChange(e.target.value)}
-              className="color-picker-input main-color-picker"
-              title="Choose brush color"
-            />
-            <div className="selected-color-preview" style={{ backgroundColor: currentColorHex }}>
-              <span className="color-hex-value">{currentColorHex}</span>
-            </div>
-          </div>
-          
-          {/* Recent Colors Palette */}
-          <div className="recent-colors-palette">
-            {recentColors.map((color, index) => (
-              <div 
-                key={index}
-                className={`color-swatch ${color === currentColorHex ? 'selected' : ''}`}
-                style={{ backgroundColor: color }}
-                onClick={() => handleBrushColorChange(color)}
-                title={color}
-              />
-            ))}
-          </div>
-        </div>
-        
-        {/* Background Color Selection */}
-        <div className="control-group">
-          <label>Background Color</label>
-          <div className="color-picker-container">
-            <input
-              type="color"
-              value={backgroundColorHex}
-              onChange={(e) => setBackgroundColorHex(e.target.value)}
-              className="color-picker-input bg-color-picker"
-              title="Choose background color"
-            />
-            <div className="selected-color-preview" style={{ backgroundColor: backgroundColorHex }}>
-              <span className="color-hex-value">{backgroundColorHex}</span>
-            </div>
-          </div>
-          
-          {/* Quick Background Presets */}
-          <div className="background-presets">
-            <div 
-              className="bg-preset" 
-              style={{ backgroundColor: '#1E1E23' }}
-              onClick={() => setBackgroundColorHex('#1E1E23')} 
-              title="Dark"
-            />
-            <div 
-              className="bg-preset" 
-              style={{ backgroundColor: '#0F1928' }}
-              onClick={() => setBackgroundColorHex('#0F1928')} 
-              title="Deep Blue"
-            />
-            <div 
-              className="bg-preset" 
-              style={{ backgroundColor: '#28231E' }}
-              onClick={() => setBackgroundColorHex('#28231E')} 
-              title="Dark Brown"
-            />
-            <div 
-              className="bg-preset" 
-              style={{ backgroundColor: '#E6E1DD' }}
-              onClick={() => setBackgroundColorHex('#E6E1DD')} 
-              title="Light"
-            />
-          </div>
-        </div>
-      </div>
+      {/* Controls toggle button */}
+      <button 
+        className="controls-toggle"
+        onClick={toggleControls}
+        title={controlsVisible ? "Hide controls" : "Show controls"}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
       
-      <div className="instructions simple-instructions">
-        Draw with the oil pastel crayon
-        <br/>
-        Press 'C' to clear the canvas
+      <div className={`controls simple-controls ${controlsVisible ? 'visible' : 'hidden'}`}>
+        {/* Brush Size Control with CustomSlider - using brush color */}
+        <div className="control-group">
+          <CustomSlider
+            value={brushSize}
+            onChange={(value) => setBrushSize(value)}
+            min={5}
+            max={50}
+            label="BRUSH SIZE"
+            color={currentColorHex}
+          />
+        </div>
+        
+        {/* Fade Speed Control with CustomSlider - using background color */}
+        <div className="control-group">
+          <CustomSlider
+            value={fadeSpeed}
+            onChange={(value) => setFadeSpeed(value)}
+            min={1}
+            max={10}
+            label="FADE SPEED"
+            color={backgroundColorHex}
+          />
+        </div>
+        
+        {/* Color Pickers Section */}
+        <div className="control-group">
+          {/* Color pickers container - horizontal layout */}
+          <div className="color-pickers-row">
+            {/* Brush Color Selection */}
+            <div className="color-picker-column">
+              <label>BRUSH</label>
+              <input
+                type="color"
+                value={currentColorHex}
+                onChange={(e) => handleBrushColorChange(e.target.value)}
+                className="color-picker-input main-color-picker"
+                title="Choose brush color"
+              />
+            </div>
+            
+            {/* Background Color Selection */}
+            <div className="color-picker-column">
+              <label>BACKGROUND</label>
+              <input
+                type="color"
+                value={backgroundColorHex}
+                onChange={(e) => handleBgColorChange(e.target.value)}
+                className="color-picker-input bg-color-picker"
+                title="Choose background color"
+              />
+            </div>
+          </div>
+          
+          {/* Shared Recent Colors Palette - without label */}
+          <div className="recent-colors-section">
+            <div className="recent-colors-palette">
+              {recentColors.map((color, index) => (
+                <div 
+                  key={index}
+                  className={`color-swatch ${color === currentColorHex || color === backgroundColorHex ? 'selected' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => {
+                    if (color === currentColorHex) {
+                      handleBgColorChange(color);
+                    } else {
+                      handleBrushColorChange(color);
+                    }
+                  }}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

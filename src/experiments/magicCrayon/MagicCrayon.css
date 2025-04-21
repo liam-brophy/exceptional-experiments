@@ -2,11 +2,11 @@
   font-family: Arial, sans-serif;
   text-align: center;
   padding: 20px;
-  background-color: #f0f8ff;
+  background-color: #f0f0f0;
   color: #333;
 }
 
-/* Updated container with dark background to make cool colors pop */
+/* Updated container with a neutral dark background */
 .magic-crayon-container {
   width: 100%;
   height: 100%;
@@ -14,7 +14,7 @@
   top: 0;
   left: 0;
   overflow: hidden;
-  background-color: rgb(30, 30, 35);
+  background-color: #121212;
 }
 
 .canvas-container {
@@ -26,25 +26,45 @@
   z-index: 1;
 }
 
-/* Simplified, clean controls */
+/* Redesigned glass-effect controls panel */
 .simple-controls {
-  position: absolute;
-  top: 20px;
+  position: fixed;
+  top: 80px;
   right: 20px;
-  background-color: rgba(40, 40, 45, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
   z-index: 10;
-  width: 270px; /* Increased width to accommodate background controls */
-  color: #e0e0e0;
+  width: 270px;
+  color: white;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+
+.simple-controls.visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+.simple-controls.hidden {
+  opacity: 0;
+  transform: translateX(30px);
+  pointer-events: none;
 }
 
 .control-group {
-  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 22px;
+  position: relative;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 .control-group:last-child {
@@ -53,29 +73,52 @@
 
 .control-group label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #e0e0e0;
-  font-weight: 400;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-family: sans-serif;
+  text-transform: uppercase;
 }
 
 /* Color picker styling */
 .color-picker-container {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.color-picker-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Redesigned color input */
 .color-picker-input {
-  width: 60px;
-  height: 40px;
-  border: none;
-  border-radius: 6px;
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
   cursor: pointer;
   background: none;
   padding: 0;
   overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 10px auto;
+  display: block;
+}
+
+.color-picker-input:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 /* Remove default color picker appearance in some browsers */
@@ -85,238 +128,443 @@
 
 .color-picker-input::-webkit-color-swatch {
   border: none;
-  border-radius: 6px;
+  border-radius: 50%;
 }
 
 .color-picker-input::-moz-color-swatch {
   border: none;
-  border-radius: 6px;
+  border-radius: 50%;
 }
 
 /* Make main brush color picker larger */
 .main-color-picker {
-  width: 60px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
 }
 
 /* Selected color display */
 .selected-color-preview {
-  flex: 1;
   height: 40px;
-  border-radius: 6px;
+  width: 100%;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Make text readable on any background color */
 .color-hex-value {
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.8);
   mix-blend-mode: difference;
   color: white;
   letter-spacing: 0.5px;
 }
 
-/* Recent colors palette */
+/* Recent colors palette with glass effect */
 .recent-colors-palette {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 8px;
+  justify-content: center;
 }
 
-/* Color swatch styling (reused for recent colors) */
+/* Color swatch styling with glass effect */
 .color-swatch {
   width: 30px;
   height: 30px;
   border-radius: 50%;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 2px solid transparent;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .color-swatch:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .color-swatch.selected {
   border-color: white;
   transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
 }
 
-/* Background color type selector */
-.background-type-selector {
-  display: flex;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.background-type-selector button {
-  flex: 1;
-  background: rgba(60, 60, 65, 0.5);
-  color: #e0e0e0;
-  border: none;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: background-color 0.2s ease;
-}
-
-.background-type-selector button:hover:not(.active) {
-  background: rgba(80, 80, 85, 0.5);
-}
-
-.background-type-selector button.active {
-  background: rgba(120, 120, 220, 0.5);
-  font-weight: 500;
-}
-
-/* Background swatches grid */
-.background-swatches {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin-top: 10px;
-  max-height: 80px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.bg-swatch {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  border: 2px solid transparent;
-}
-
-.bg-swatch:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
-}
-
-.bg-swatch.selected {
-  border-color: white;
-  transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-}
-
-/* Custom color picker styling */
-.custom-color-picker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.color-picker-input {
-  width: 100px;
-  height: 30px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  cursor: pointer;
-  background: none;
-  padding: 0;
-}
-
-.color-hex-value {
-  font-family: monospace;
-  font-size: 13px;
-  color: #e0e0e0;
-}
-
-/* Background dropdown styles */
-.background-select {
-  margin-top: 8px;
-}
-
-/* Background color presets */
-.background-presets {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.bg-preset {
-  width: 40px;
-  height: 30px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  flex: 1;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.bg-preset:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-/* Minimalist instructions */
-.simple-instructions {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.7);
-  background-color: rgba(40, 40, 45, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 10px 16px;
-  border-radius: 8px;
-  text-align: center;
-  font-size: 14px;
-  z-index: 5;
-  pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  opacity: 0.8;
-  line-height: 1.5;
-  transition: opacity 0.5s ease;
-}
-
-.simple-instructions:hover {
-  opacity: 0.1;
-}
-
-/* Clean, minimalist sliders */
+/* Clean, minimalist sliders with glass effect and larger handle */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: rgba(200, 200, 200, 0.3);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
   outline: none;
   width: 100%;
+  margin: 15px 0;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
   cursor: pointer;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  transition: transform 0.1s, box-shadow 0.1s;
+  margin-top: -10px; /* Center the thumb vertically */
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
   cursor: pointer;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+/* Active state for sliders */
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+  background: white;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+input[type="range"]:active::-moz-range-thumb {
+  transform: scale(1.2);
+  background: white;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+/* Recent colors section styling */
+.recent-colors-section {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.recent-colors-label {
+  margin-bottom: 12px;
+  display: block;
+  color: white;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+}
+
+.secondary-label {
+  margin-top: 16px;
+}
+
+/* Controls toggle button */
+.controls-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  cursor: pointer;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.controls-toggle:hover {
+  transform: scale(1.05);
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.controls-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Horizontal layout for color pickers */
+.color-pickers-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.color-picker-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* Custom Slider Styles */
+.custom-slider-container {
+  width: 100%;
+  margin: 15px 0;
+  position: relative;
+  padding: 5px 0;
+}
+
+.custom-slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-family: sans-serif;
+  text-transform: uppercase;
+}
+
+.value-display {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 2px 8px;
+  min-width: 24px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 13px;
+  transition: transform 0.1s;
+}
+
+.value-display.wobble {
+  animation: wobble 0.4s ease;
+}
+
+@keyframes wobble {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-4px) rotate(-2deg); }
+  40% { transform: translateX(4px) rotate(2deg); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+.custom-slider-track {
+  height: 16px;
+  position: relative;
+  cursor: pointer;
+  margin: 12px 0;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 1px rgba(255, 255, 255, 0.1);
+  overflow: visible;
+  transition: height 0.2s ease, background 0.3s ease;
+}
+
+.custom-slider-track.hovered {
+  height: 18px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.custom-slider-track.dragging {
+  height: 20px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.custom-slider-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3));
+  border-radius: 4px;
+  pointer-events: none;
+  transition: width 0.1s ease-out;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  z-index: 1;
+}
+
+.custom-slider-track.dragging .custom-slider-fill {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.4));
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Segmented track for more visual interest */
+.track-segment {
+  position: absolute;
+  width: 4px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  top: 0;
+  transform: translateY(0);
+  transition: transform 0.2s, background 0.2s, height 0.2s;
+  z-index: 2;
+}
+
+.track-segment.active {
+  background: rgba(255, 255, 255, 0.4);
+  height: 100%;
+  transform: translateY(0px) scaleY(1.1);
+  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-slider-track.hovered .track-segment {
+  height: 18px;
+}
+
+.custom-slider-track.hovered .track-segment.active {
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateY(0px) scaleY(1.3);
+}
+
+.custom-slider-track.dragging .track-segment.active {
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { background: rgba(255, 255, 255, 0.4); }
+  100% { background: rgba(255, 255, 255, 0.7); }
+}
+
+/* Fancy handle styling */
+.custom-slider-handle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 10;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-slider-handle:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.custom-slider-handle.dragging {
+  transform: translate(-50%, -50%) scale(1.2);
+  cursor: grabbing;
+}
+
+.custom-slider-handle.wobble {
+  animation: handleWobble 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes handleWobble {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0); }
+  20% { transform: translate(-50%, -50%) rotate(-10deg) scale(1.2); }
+  40% { transform: translate(-50%, -50%) rotate(8deg) scale(1.2); }
+  60% { transform: translate(-50%, -50%) rotate(-6deg) scale(1.15); }
+  80% { transform: translate(-50%, -50%) rotate(4deg) scale(1.1); }
+}
+
+/* Inner handle elements for visual interest */
+.handle-core {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  background: white;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.custom-slider-handle:hover .handle-core {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 7px rgba(0, 0, 0, 0.3);
+}
+
+.handle-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  box-sizing: border-box;
+  animation: pulsate 2s infinite;
+  opacity: 0;
+}
+
+.custom-slider-handle:hover .handle-pulse,
+.custom-slider-handle.dragging .handle-pulse {
+  opacity: 1;
+}
+
+@keyframes pulsate {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Particle effects for extra zaniness */
+.slider-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 5;
+  animation: float 1.5s ease-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(-50%) translateX(0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-20px) translateX(var(--random-x, 5px));
+    opacity: 0;
+  }
 }
