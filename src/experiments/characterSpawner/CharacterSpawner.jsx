@@ -1,20 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CharacterSpawner.css';
 
-const GRAVITY = 0.25; // Reduced gravity constant (was 0.98)
-const ENERGY_LOSS = 0.85; // Slightly increased bounce elasticity
-const FRICTION = 0.99; // Air resistance
+const GRAVITY = 0.25;
+const ENERGY_LOSS = 0.85;
+const FRICTION = 0.99;
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const EMOJIS = ['😀', '😍', '🚀', '🎉', '🌈', '✨', '💖', '🔥', '🎁', '🎮', '🍕', '🍦', '🦄', '🐱', '🐶', '🌟', '🌺', '🏆', '🎯', '🎨', '🎭', '🎼', '📱', '💻', '🎧'];
 const FONTS = ['Roboto', 'Arial', 'Courier New', 'Georgia', 'Times New Roman'];
-// Updated confetti colors to match filter/tag colors
-const CONFETTI_COLORS = [
-  '#0300F0', '#00F0D4', '#FF0D66', '#FCFF00', '#000000'
-];
-// Removed random shapes - we'll use sprinkles only
-const MIN_CONFETTI_COUNT = 10; // Minimum confetti pieces for a short click
-const MAX_CONFETTI_COUNT = 60; // Maximum confetti pieces for a long hold
-const CONFETTI_LIFETIME = 5000; // Increased lifetime of confetti in milliseconds (was 2000)
+const LINK_DISTANCE = 30; // Distance between chain links
+const CHARACTER_SIZE = 24; // Base size for characters in the chain
 
 const getRandomCharacter = () => {
   // 40% chance to get an emoji, 60% chance to get a regular character
@@ -26,106 +20,93 @@ const getRandomCharacter = () => {
 };
 
 const CharacterSpawner = () => {
-  const [balls, setBalls] = useState([]);
-  const [confetti, setConfetti] = useState([]);
-  const [holdIndicator, setHoldIndicator] = useState(null);
-  const [keyHoldStart, setKeyHoldStart] = useState(null);
+  const [chain, setChain] = useState([]);
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
+  const [isCreatingChain, setIsCreatingChain] = useState(false);
   const containerRef = useRef(null);
-  const holdStartRef = useRef(null);
-
-  // Generate a random confetti piece
-  const createConfettiPiece = (x, y) => {
-    const randomColor = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
-    const angle = Math.random() * Math.PI * 2; // Random angle for direction
-    const speed = Math.random() * 0.8 + 0.2; // Dramatically reduced speed between 0.2 and 1 (was 1-3)
+  
+  // Create a new link for the chain
+  const addChainLink = (x, y) => {
+    const character = getRandomCharacter();
     
-    return {
-      id: `confetti-${Date.now()}-${Math.random()}`,
-      x,
-      y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 0.5, // Very gentle initial upward boost (was -1)
-      size: Math.random() * 6 + 4, // Size between 4 and 10 pixels
-      color: randomColor,
-      rotation: Math.random() * 360,
-      rotationSpeed: (Math.random() * 2 - 1) * 0.5, // Very slow rotation (was 10-5)
-      createdAt: Date.now(),
-      wobbleOffset: Math.random() * Math.PI * 2, // Random starting phase for wobble
-      wobbleSpeed: Math.random() * 0.02 + 0.01, // Slow wobble speed
-    };
+    setChain(prevChain => {
+      // If this is the first link, initialize with no velocity
+      if (prevChain.length === 0) {
+        return [{
+          id: Date.now(),
+          x,
+          y,
+          vx: 0,
+          vy: 0,
+          character,
+          font: selectedFont
+        }];
+      }
+      
+      // Add a new link to the existing chain
+      return [...prevChain, {
+        id: Date.now(),
+        x,
+        y,
+        vx: 0,
+        vy: 0,
+        character,
+        font: selectedFont
+      }];
+    });
   };
-
-  // Spawn confetti at a given position
-  const spawnConfetti = (x, y, holdDuration) => {
-    const confettiCount = Math.min(
-      MAX_CONFETTI_COUNT,
-      Math.max(MIN_CONFETTI_COUNT, Math.floor((holdDuration / 1000) * MAX_CONFETTI_COUNT))
-    );
-    const newConfetti = Array(confettiCount)
-      .fill(null)
-      .map(() => createConfettiPiece(x, y));
-    
-    setConfetti(prev => [...prev, ...newConfetti]);
-    
-    // Clean up confetti after its lifetime
-    setTimeout(() => {
-      setConfetti(prev => prev.filter(c => c.createdAt > Date.now() - CONFETTI_LIFETIME));
-    }, CONFETTI_LIFETIME);
-  };
-
-  const spawnBall = (character, x, y, holdDuration) => {
-    const newBall = {
-      id: Date.now(),
-      x,
-      y,
-      vx: Math.random() * 2 - 1, // Reduced random initial velocity x (was 4-2)
-      vy: Math.random() * 1 - 0.5, // Reduced random initial velocity y (was 4-2)
-      radius: Math.min(Math.max(10, holdDuration / 50), 200), // Radius increases with hold duration, capped at 200
-      character,
-      font: selectedFont,
-    };
-    setBalls((prevBalls) => [...prevBalls, newBall]);
-    
-    // Spawn confetti when a character is spawned
-    spawnConfetti(x, y, holdDuration);
-  };
-
+  
+  // Start a new chain at the clicked position
   const handleMouseDown = (e) => {
-    holdStartRef.current = Date.now();
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    setHoldIndicator({ x, y, radius: 10 });
+    
+    // Reset the chain and start a new one
+    setChain([]);
+    setIsCreatingChain(true);
+    addChainLink(x, y);
   };
-
-  const handleMouseUp = (e) => {
+  
+  // Add a link to the chain when moving with mouse down
+  const handleMouseMove = (e) => {
+    if (!isCreatingChain) return;
+    
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const holdDuration = holdStartRef.current ? Date.now() - holdStartRef.current : 0;
-    spawnBall(getRandomCharacter(), x, y, holdDuration);
-    setHoldIndicator(null); // Remove hold indicator
-    holdStartRef.current = null; // Reset hold start time
-  };
-
-  const handleKeyDown = (e) => {
-    if (!keyHoldStart) {
-      setKeyHoldStart({ key: e.key, startTime: Date.now() });
+    
+    // Only add a new link if we've moved far enough from the last link
+    if (chain.length > 0) {
+      const lastLink = chain[chain.length - 1];
+      const dx = x - lastLink.x;
+      const dy = y - lastLink.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance >= LINK_DISTANCE) {
+        addChainLink(x, y);
+      }
     }
   };
-
-  const handleKeyUp = (e) => {
-    if (keyHoldStart && keyHoldStart.key === e.key) {
-      const holdDuration = Date.now() - keyHoldStart.startTime;
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = Math.random() * rect.width; // Random horizontal position
-      const y = Math.random() * rect.height; // Random vertical position
-      spawnBall(e.key, x, y, holdDuration);
-      setKeyHoldStart(null);
+  
+  // Release the chain to let it fall
+  const handleMouseUp = () => {
+    setIsCreatingChain(false);
+    
+    // Apply a small initial velocity to make the chain move
+    if (chain.length > 0) {
+      setChain(prevChain => {
+        const updatedChain = [...prevChain];
+        updatedChain[0] = {
+          ...updatedChain[0],
+          vx: Math.random() * 2 - 1,
+          vy: -1 // Small upward boost
+        };
+        return updatedChain;
+      });
     }
   };
-
+  
   const handleFontChange = (digit) => {
     const fontIndex = parseInt(digit, 10) - 1;
     if (fontIndex >= 0 && fontIndex < FONTS.length) {
@@ -133,100 +114,26 @@ const CharacterSpawner = () => {
     }
   };
 
+  // Set up event listeners
   useEffect(() => {
     const container = containerRef.current;
     container.addEventListener('mousedown', handleMouseDown);
+    container.addEventListener('mousemove', handleMouseMove);
     container.addEventListener('mouseup', handleMouseUp);
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    container.addEventListener('mouseleave', handleMouseUp);
 
     return () => {
       container.removeEventListener('mousedown', handleMouseDown);
+      container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseup', handleMouseUp);
-
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      container.removeEventListener('mouseleave', handleMouseUp);
     };
-  }, [keyHoldStart]);
+  }, [chain, isCreatingChain]);
 
-  useEffect(() => {
-    if (holdIndicator) {
-      const interval = setInterval(() => {
-        setHoldIndicator((prev) => {
-          if (!prev) return null;
-          return { ...prev, radius: Math.min(prev.radius + 1, 200) }; // Cap radius at 200 (was 50)
-        });
-      }, 50);
-
-      return () => clearInterval(interval);
-    }
-  }, [holdIndicator]);
-
-  useEffect(() => {
-    const updateBalls = () => {
-      setBalls((prevBalls) => {
-        const updatedBalls = prevBalls.map((ball) => {
-          let { x, y, vx, vy, radius } = ball;
-
-          // Apply gravity
-          vy += GRAVITY;
-
-          // Apply velocity
-          x += vx;
-          y += vy;
-
-          // Collision with boundaries
-          const rect = containerRef.current.getBoundingClientRect();
-          if (x - radius < 0 || x + radius > rect.width) {
-            vx = -vx * ENERGY_LOSS;
-            x = x - radius < 0 ? radius : rect.width - radius;
-          }
-          if (y + radius > rect.height) {
-            vy = 0; // Stop vertical movement
-            y = rect.height - radius; // Align to the bottom boundary
-          }
-
-          // Apply friction
-          vx *= FRICTION;
-          vy *= FRICTION;
-
-          return { ...ball, x, y, vx, vy };
-        });
-
-        // Handle stacking logic
-        for (let i = 0; i < updatedBalls.length; i++) {
-          for (let j = 0; j < updatedBalls.length; j++) {
-            if (i !== j) {
-              const ballA = updatedBalls[i];
-              const ballB = updatedBalls[j];
-
-              // Check if ballA is directly above ballB and overlapping
-              if (
-                Math.abs(ballA.x - ballB.x) < Math.max(ballA.radius, ballB.radius) &&
-                ballA.y + ballA.radius > ballB.y - ballB.radius &&
-                ballA.y < ballB.y
-              ) {
-                // Adjust ballA to sit on top of ballB
-                ballA.y = ballB.y - ballB.radius - ballA.radius;
-                ballA.vy = 0; // Stop vertical movement
-              }
-            }
-          }
-        }
-
-        return updatedBalls;
-      });
-      requestAnimationFrame(updateBalls);
-    };
-
-    const animationId = requestAnimationFrame(updateBalls);
-    return () => cancelAnimationFrame(animationId);
-  }, []);
-
+  // Handle keyboard shortcuts for font changing
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.altKey && !isNaN(e.key)) { // Changed from Cmd to Alt for safer option
+      if (e.altKey && !isNaN(e.key)) {
         handleFontChange(e.key);
       }
     };
@@ -237,104 +144,114 @@ const CharacterSpawner = () => {
     };
   }, []);
 
+  // Chain physics simulation
   useEffect(() => {
-    const updateConfetti = () => {
-      setConfetti((prevConfetti) => {
-        return prevConfetti.map((piece) => {
-          let { x, y, vx, vy, rotation, rotationSpeed, wobbleOffset, wobbleSpeed } = piece;
-
-          // Apply extremely reduced gravity for ultra-slow falling
-          vy += GRAVITY * 0.005; // Dramatically reduced gravity (was 0.02)
-
-          // Apply slow air resistance
-          vx *= 0.995; // Slower horizontal deceleration
-          vy *= 0.995; // Slower vertical deceleration
-
-          // Add gentle wobble movement for dreamy effect
-          const wobble = Math.sin(wobbleOffset) * 0.1;
-          wobbleOffset += wobbleSpeed;
+    if (chain.length === 0 || isCreatingChain) return;
+    
+    const updateChain = () => {
+      setChain(prevChain => {
+        if (prevChain.length === 0) return prevChain;
+        
+        const updatedChain = [...prevChain];
+        const rect = containerRef.current.getBoundingClientRect();
+        
+        // Update the head of the chain with physics
+        let head = updatedChain[0];
+        
+        // Apply gravity to the head
+        head.vy += GRAVITY;
+        
+        // Apply velocity
+        head.x += head.vx;
+        head.y += head.vy;
+        
+        // Boundary collision for the head
+        if (head.x < CHARACTER_SIZE/2) {
+          head.x = CHARACTER_SIZE/2;
+          head.vx = -head.vx * ENERGY_LOSS;
+        } else if (head.x > rect.width - CHARACTER_SIZE/2) {
+          head.x = rect.width - CHARACTER_SIZE/2;
+          head.vx = -head.vx * ENERGY_LOSS;
+        }
+        
+        if (head.y > rect.height - CHARACTER_SIZE/2) {
+          head.y = rect.height - CHARACTER_SIZE/2;
+          head.vy = -head.vy * ENERGY_LOSS;
           
-          // Apply velocity with wobble
-          x += vx + wobble;
-          y += vy;
-
-          // Apply slow rotation
-          rotation += rotationSpeed;
-
-          return { ...piece, x, y, vx, vy, rotation, wobbleOffset };
-        });
+          // Apply friction when on ground
+          head.vx *= FRICTION;
+        }
+        
+        // Update head
+        updatedChain[0] = head;
+        
+        // Update the rest of the chain to follow the head with a string-like effect
+        for (let i = 1; i < updatedChain.length; i++) {
+          const prevLink = updatedChain[i - 1];
+          const currentLink = updatedChain[i];
+          
+          // Calculate desired position (maintaining LINK_DISTANCE from previous link)
+          const dx = currentLink.x - prevLink.x;
+          const dy = currentLink.y - prevLink.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // Only adjust if links are too far apart
+          if (distance > LINK_DISTANCE) {
+            const ratio = LINK_DISTANCE / distance;
+            
+            // Calculate new position
+            const targetX = prevLink.x + dx * ratio;
+            const targetY = prevLink.y + dy * ratio;
+            
+            // Gradually move towards target position (creates more fluid motion)
+            currentLink.x = currentLink.x * 0.8 + targetX * 0.2;
+            currentLink.y = currentLink.y * 0.8 + targetY * 0.2;
+          }
+        }
+        
+        return updatedChain;
       });
-      requestAnimationFrame(updateConfetti);
+      
+      animationRef.current = requestAnimationFrame(updateChain);
     };
-
-    const animationId = requestAnimationFrame(updateConfetti);
-    return () => cancelAnimationFrame(animationId);
-  }, []);
+    
+    const animationRef = { current: null };
+    animationRef.current = requestAnimationFrame(updateChain);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [chain.length, isCreatingChain]);
 
   return (
     <div
       ref={containerRef}
-      className="low-poly-map"
+      className="character-chain-container"
       style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%' }}
     >
       <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 10, fontSize: '14px', color: '#555' }}>
-        Press Alt + a digit to change fonts
+        Click and drag to create a character chain. Press Alt + a digit to change fonts.
       </div>
-
-      {holdIndicator && (
+      
+      {chain.map((link, index) => (
         <div
+          key={link.id}
           style={{
             position: 'absolute',
-            left: holdIndicator.x,
-            top: holdIndicator.y,
-            width: `${holdIndicator.radius * 2}px`,
-            height: `${holdIndicator.radius * 2}px`,
-            borderRadius: '50%',
-            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+            left: link.x,
+            top: link.y,
+            fontFamily: link.font,
+            fontSize: `${CHARACTER_SIZE}px`,
             transform: 'translate(-50%, -50%)',
-          }}
-        ></div>
-      )}
-      {balls.map((ball) => (
-        <div
-          key={ball.id}
-          style={{
-            position: 'absolute',
-            left: ball.x,
-            top: ball.y,
-            fontFamily: ball.font,
-            fontSize: `${ball.radius * 2}px`,
-            transform: 'translate(-50%, -50%)',
+            transition: isCreatingChain ? 'none' : 'transform 0.05s ease-out',
+            zIndex: chain.length - index // Higher index items are on top
           }}
         >
-          {ball.character}
+          {link.character}
         </div>
       ))}
-      {confetti.map((piece) => {
-        // Calculate opacity based on lifetime - fade out gradually
-        const age = Date.now() - piece.createdAt;
-        const lifePercentage = age / CONFETTI_LIFETIME;
-        // Start at full opacity, then fade out in the last 70% of its lifetime
-        const opacity = lifePercentage < 0.3 ? 1 : Math.max(0, 1 - ((lifePercentage - 0.3) / 0.7));
-                
-        return (
-          <div
-            key={piece.id}
-            style={{
-              position: 'absolute',
-              left: piece.x,
-              top: piece.y,
-              width: `${piece.size * 0.8}px`,
-              height: `${piece.size * 0.25}px`, // Create elongated shape for sprinkles
-              backgroundColor: piece.color,
-              transform: `translate(-50%, -50%) rotate(${piece.rotation}deg)`,
-              borderRadius: `${piece.size * 0.125}px`, // Rounded ends for sprinkle shape
-              opacity,
-              transition: 'opacity 300ms ease-out', // Smooth transition for opacity changes
-            }}
-          ></div>
-        );
-      })}
     </div>
   );
 };
