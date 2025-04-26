@@ -6,6 +6,7 @@ import MagicCrayon from './magicCrayon/MagicCrayon';
 import TypeCaster from './typeCaster/TypeCaster';
 import Outliner from './outliner/Outliner';
 import Chained from './chained/Chained';
+import Letturn from './letturn/Letturn'; // Add import for the new component
 
 const experimentList = [
   {
@@ -64,7 +65,7 @@ const experimentList = [
     title: 'Outliner',
     description: 'Create artistic outlines with customizable styles and animations.',
     component: Outliner,
-    thumbnail: '/thumbnails/experiment2.png', // Using an existing image as fallback
+    thumbnail: '/thumbnails/Outliner.png', // Updated thumbnail path
     tags: ['animation', 'generative'],
     createdAt: '2025-03-12',
   },
@@ -74,9 +75,19 @@ const experimentList = [
     title: 'Chained',
     description: 'Create mesmerizing linked chain patterns that react to your movements.',
     component: Chained,
-    thumbnail: '/thumbnails/experiment2.png', // Using an existing image as fallback
+    thumbnail: '/thumbnails/Chained.png', // Updated thumbnail path
     tags: ['animation', 'physics'],
     createdAt: '2025-04-10',
+  },
+  {
+    id: 'letturn',
+    slug: 'letturn',
+    title: 'Letturn',
+    description: 'Users pick from an array of characters, and when selected they are rendered and movable in 3js',
+    component: Letturn,
+    thumbnail: '/thumbnails/Letturn.png', // Updated thumbnail path
+    tags: ['3d', 'typography', 'interactive'],
+    createdAt: '2025-04-26', // Current date
   },
 ];
 

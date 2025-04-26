@@ -1,5 +1,5 @@
-/* Import the Adso font */
-@import url('/fonts/adso-font.css');
+/* Remove Adso font import */
+/* @import url('/fonts/adso-font.css'); */
 
 /* Light Mode Theme Variables (default) - Black and White theme */
 :root {

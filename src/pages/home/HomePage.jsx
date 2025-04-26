@@ -4,7 +4,7 @@ import { experiments } from '../../experiments/experimentList';
 import {
   Container, Title, Text, TextInput, SimpleGrid, Paper,
   Group, Chip, Badge, AspectRatio, Image, Box, Stack,
-  useMantineTheme, rem, Select, Button,
+  useMantineTheme, rem, Select, Button, Loader, // Import Loader
 } from '@mantine/core';
 import { IconSearch, IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import ExperimentCard from '../../shared/components/ExperimentCard';
@@ -48,6 +48,9 @@ const HomePage = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [hoveredExperimentId, setHoveredExperimentId] = useState(null);
   const [sortOption, setSortOption] = useState('newest');
+  const [loading, setLoading] = useState(true); // Still true initially
+  const [availableTags, setAvailableTags] = useState([]); // State for tags
+  const [displayExperiments, setDisplayExperiments] = useState([]); // State for experiments to display
 
   const tickerMessages = [
     "Scientists confirm clouds are just sky thoughts passing through.",
@@ -91,33 +94,49 @@ const HomePage = () => {
     "Printer confesses it's been using Comic Sans out of quiet rebellion.",
     "Global summit convened to address growing number of unexplainable vibes."
   ];
-  
-  const allTags = [...new Set(experiments.flatMap(exp => exp.tags || []))].sort();
 
-  const filteredExperiments = experiments.filter(exp => {
-    const lowerSearch = searchTerm.toLowerCase();
-    const matchesSearch = exp.title.toLowerCase().includes(lowerSearch) ||
-                         exp.description.toLowerCase().includes(lowerSearch);
-    const matchesTags = selectedTags.length === 0 ||
-                        selectedTags.every(tag => (exp.tags || []).includes(tag));
-    
-    return matchesSearch && matchesTags;
-  });
+  // Effect for processing experiments and tags after initial render
+  useEffect(() => {
+    // Calculate tags
+    const tags = [...new Set(experiments.flatMap(exp => exp.tags || []))].sort();
+    setAvailableTags(tags);
 
-  // Sort experiments based on sort option
-  const sortedExperiments = [...filteredExperiments].sort((a, b) => {
-    switch (sortOption) {
-      case 'newest':
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      case 'oldest':
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      default:
-        return 0; // Keep original order
-    }
-  });
+    // Filter experiments
+    const filtered = experiments.filter(exp => {
+      const lowerSearch = searchTerm.toLowerCase();
+      const matchesSearch = exp.title.toLowerCase().includes(lowerSearch) ||
+                           exp.description.toLowerCase().includes(lowerSearch);
+      const matchesTags = selectedTags.length === 0 ||
+                          selectedTags.every(tag => (exp.tags || []).includes(tag));
+      return matchesSearch && matchesTags;
+    });
+
+    // Sort experiments
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case 'newest':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'oldest':
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        default:
+          return 0;
+      }
+    });
+    setDisplayExperiments(sorted);
+
+  }, [searchTerm, selectedTags, sortOption]); // Rerun when filters/sort change
 
   const handleMouseEnter = (id) => setHoveredExperimentId(id);
   const handleMouseLeave = () => setHoveredExperimentId(null);
+
+  // Effect to manage the minimum loading display time
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500); // Reduced minimum loading time slightly, adjust as needed
+
+    return () => clearTimeout(timer); // Cleanup timer on unmount
+  }, []); // Runs once on mount
 
   // Styles for the INNER Paper (Frosted Glass)
   const frostedGlassStyleInner = (theme) => ({
@@ -135,6 +154,16 @@ const HomePage = () => {
   // Define border thickness/padding
   const borderPadding = rem(5); // Reset padding to original value or adjust
 
+  // Show loader immediately while loading is true
+  if (loading) {
+    return (
+      <Container size="lg" py="xl" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <Loader size="xl" />
+      </Container>
+    );
+  }
+
+  // Render content when loading is complete
   return (
     <>
       {/* News Ticker */}
@@ -143,13 +172,10 @@ const HomePage = () => {
       <Container size="lg" py="xl">
         {/* Header */}
         <Stack align="center" mb="xl">
-          <Title order={1} align="center"></Title>
-          <Text className="laboratory-title" align="center">
+          {/* Changed from Text to Title */}
+          <Title className="laboratory-title" align="center">
                Laboratory
-          </Text>
-          <Text color="dimmed" size="sm" align="center" italic="true">
-            updated (almost) everyday
-          </Text>
+          </Title>
           
           {/* Theme Toggle placed in the header for universal access */}
           <div className="theme-toggle-container">
@@ -196,9 +222,9 @@ const HomePage = () => {
             />
           </Group>
            
-          {/* Experimental Tag System - directly below search bar */}
+          {/* Experimental Tag System - Use availableTags from state */}
           <div className="experimental-tag-container">
-             {allTags.map((tag, index) => {
+             {availableTags.map((tag, index) => { // Use availableTags state
                const isSelected = selectedTags.includes(tag);
                // Use the specified color palette
                const colors = ['#0300F0', '#00F0D4', '#FF0D66', '#FCFF00', '#000000'];
@@ -240,13 +266,13 @@ const HomePage = () => {
            </div>
         </Stack>
 
-        {/* Grid */}
+        {/* Grid - Use displayExperiments from state */}
         <SimpleGrid
             cols={{ base: 1, sm: 2, lg: 3 }}
             spacing="xl"
             verticalSpacing="xl"
           >
-          {sortedExperiments.map(experiment => (
+          {displayExperiments.map(experiment => ( // Use displayExperiments state
             <ExperimentCard
               key={experiment.id}
               experiment={experiment}

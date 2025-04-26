@@ -14,11 +14,14 @@ function Outliner() {
   const [imageSizeWarning, setImageSizeWarning] = useState(false);
   const [debugInfo, setDebugInfo] = useState({});
   const [processingProgress, setProcessingProgress] = useState(0);
-  
+  const [displayedDebugLines, setDisplayedDebugLines] = useState([]);
+  const [debugLinesToDisplay, setDebugLinesToDisplay] = useState([]);
+
   const resultCanvasRef = useRef(null);
   const dropAreaRef = useRef(null);
   const processingTimerRef = useRef(null);
   const debouncedProcessRef = useRef(null);
+  const debugIntervalRef = useRef(null); // Ref for the debug animation interval
 
   // Initialize web worker
   useEffect(() => {
@@ -341,6 +344,53 @@ function Outliner() {
     }
   };
 
+  // Effect to handle debug info animation
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development' || Object.keys(debugInfo).length === 0) {
+      setDisplayedDebugLines([]);
+      setDebugLinesToDisplay([]);
+      if (debugIntervalRef.current) clearInterval(debugIntervalRef.current);
+      debugIntervalRef.current = null;
+      return;
+    }
+
+    // Format debugInfo into lines, handling potential objects/arrays
+    const formatValue = (value) => {
+      if (typeof value === 'object' && value !== null) {
+        return JSON.stringify(value); // Keep nested objects/arrays as JSON strings
+      }
+      return String(value); // Convert others to string
+    };
+
+    const formattedLines = Object.entries(debugInfo)
+      .map(([key, value]) => `${key}: ${formatValue(value)}`);
+
+    setDebugLinesToDisplay(formattedLines);
+    setDisplayedDebugLines([]); // Reset displayed lines
+
+    if (debugIntervalRef.current) {
+      clearInterval(debugIntervalRef.current);
+    }
+
+    let lineIndex = 0;
+    debugIntervalRef.current = setInterval(() => {
+      if (lineIndex < formattedLines.length) {
+        setDisplayedDebugLines(prev => [...prev, formattedLines[lineIndex]]);
+        lineIndex++;
+      } else {
+        clearInterval(debugIntervalRef.current);
+        debugIntervalRef.current = null; // Clear ref when done
+      }
+    }, 100); // ms per line
+
+    // Cleanup function
+    return () => {
+      if (debugIntervalRef.current) {
+        clearInterval(debugIntervalRef.current);
+      }
+    };
+  }, [debugInfo]); // Rerun when debugInfo changes
+
   return (
     <div className="outliner-container">
       <div className="outliner-content">
@@ -356,14 +406,7 @@ function Outliner() {
               disabled={isProcessing}
             />
             <span className="threshold-value">Threshold: {threshold}</span>
-            
-            {/* Debug information section - only visible in development */}
-            {process.env.NODE_ENV === 'development' && Object.keys(debugInfo).length > 0 && (
-              <div className="debug-info">
-                <h4>Debug Info</h4>
-                <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
-              </div>
-            )}
+            {/* Debug info moved below */}
           </div>
         )}
         
@@ -411,6 +454,17 @@ function Outliner() {
             </div>
           )}
         </div>
+
+        {/* Animated Debug information section - only visible in development */}
+        {process.env.NODE_ENV === 'development' && debugLinesToDisplay.length > 0 && (
+          <div className="matrix-debug">
+            {displayedDebugLines.map((line, index) => (
+              <span key={index}>{line}</span>
+            ))}
+            {/* Show cursor only while animating */}
+            {debugIntervalRef.current && <span className="cursor"></span>}
+          </div>
+        )}
       </div>
     </div>
   );

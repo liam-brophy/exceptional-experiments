@@ -1,0 +1,94 @@
+.letturn-experiment-container { /* Renamed from .letturn-container */
+  padding: 90px 20px 20px; /* Slightly more top padding */
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px); /* Adjust based on header/footer height */
+  box-sizing: border-box;
+}
+
+.letturn-experiment-container h1,
+.letturn-experiment-container p {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.letturn-main-content {
+  display: flex;
+  flex-grow: 1; /* Allow main content to fill available vertical space */
+  gap: 20px; /* Space between columns */
+  overflow: hidden; /* Prevent content overflow */
+  padding: 20px; /* Added padding around the main content */
+}
+
+.letturn-selection-panel {
+  width: 250px; /* Slightly wider for better grid display */
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow-y: auto; /* Allow scrolling if content exceeds height */
+  background-color: var(--secondary-bg-color);
+  display: flex; /* Use flexbox for vertical layout */
+  flex-direction: column; /* Stack children vertically */
+}
+
+.letturn-selection-panel h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  text-align: center; /* Center the heading */
+  flex-shrink: 0; /* Prevent heading from shrinking */
+}
+
+.letturn-item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(35px, 1fr)); /* Responsive grid */
+  gap: 8px; /* Space between buttons */
+  overflow-y: auto; /* Allow grid itself to scroll if needed */
+  flex-grow: 1; /* Allow grid to take remaining space */
+  padding: 5px; /* Add some padding inside the grid */
+}
+
+.letturn-item-button {
+  padding: 8px;
+  font-size: 1.1em;
+  cursor: pointer;
+  border: 1px solid var(--border-color-light);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 4px;
+  transition: background-color 0.2s, border-color 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 35px; /* Ensure buttons have a minimum height */
+}
+
+.letturn-item-button:hover {
+  background-color: var(--hover-bg-color);
+  border-color: var(--primary-color);
+}
+
+.letturn-item-button.selected {
+  background-color: var(--primary-color);
+  color: var(--primary-contrast-text);
+  border-color: var(--primary-color);
+  font-weight: bold;
+}
+
+.letturn-canvas-container {
+  flex-grow: 1; /* Allow canvas container to fill remaining horizontal space */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden; /* Ensure canvas fits within bounds */
+  position: relative; /* Needed for potential absolute positioning inside */
+  background-color: var(--secondary-bg-color);
+  /* Use the custom toggle cursor - make sure toggle-cursor.png is in public/cursors/ */
+  cursor: url('/cursors/toggle-cursor.png'), pointer; /* Fallback to pointer */
+}
+
+/* Ensure canvas itself fills its container */
+.letturn-canvas-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}

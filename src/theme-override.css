@@ -73,7 +73,8 @@ body {
 .mantine-Notification-description,
 .mantine-Alert-title,
 .mantine-Alert-message,
-.mantine-Menu-item {
+.mantine-Menu-item,
+.mantine-Title-root { /* Added .mantine-Title-root here */
   font-family: 'Adso', sans-serif !important;
 }
 

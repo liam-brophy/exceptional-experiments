@@ -56,36 +56,60 @@ const ExperimentCard = ({ experiment, isHovered, onMouseEnter, onMouseLeave }) =
                 />
               )}
             </AspectRatio>
-            <Box p="md" style={{ flexGrow: 1 }}>
-              <Title order={4} size="h5" mb="xs" lineClamp={1}>
-                {title}
-              </Title>
-              <Text size="sm" c="dimmed" lineClamp={2} mb="md">
-                {description}
-              </Text>
-              <Group gap="xs" wrap="wrap">
-                {(tags || []).slice(0, 4).map((tag, index) => {
-                  const colorIndex = index % colors.length;
-                  const tagColor = colors[colorIndex];
-                  const isDarkText = tagColor === '#FCFF00' || tagColor === '#00F0D4';
-                  
-                  return (
-                    <Badge 
-                      key={tag} 
-                      size="sm" 
-                      radius="sm"
-                      styles={(theme) => ({
-                        root: {
-                          backgroundColor: tagColor,
-                          color: isDarkText ? '#000000' : '#FFFFFF',
-                        }
-                      })}
-                    >
-                      {tag}
-                    </Badge>
-                  );
-                })}
-              </Group>
+            <Box 
+              p="md" 
+              style={{ flexGrow: 1, position: 'relative', overflow: 'hidden' }}
+              sx={{
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundImage: `url(${thumbnail})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center bottom', // Reflect the bottom part of the image
+                  transform: 'scaleY(-1)',
+                  opacity: 0.05, // Adjust opacity for faintness
+                  maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0))',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0))',
+                  zIndex: 0, // Ensure it's behind the text content
+                },
+              }}
+            >
+              {/* Ensure text content is above the reflection */}
+              <Box style={{ position: 'relative', zIndex: 1 }}>
+                <Title order={4} size="h5" mb="xs" lineClamp={1}>
+                  {title}
+                </Title>
+                <Text size="sm" c="dimmed" lineClamp={2} mb="md">
+                  {description}
+                </Text>
+                <Group gap="xs" wrap="wrap">
+                  {(tags || []).slice(0, 4).map((tag, index) => {
+                    const colorIndex = index % colors.length;
+                    const tagColor = colors[colorIndex];
+                    const isDarkText = tagColor === '#FCFF00' || tagColor === '#00F0D4';
+                    
+                    return (
+                      <Badge 
+                        key={tag} 
+                        size="sm" 
+                        radius="sm"
+                        styles={(theme) => ({
+                          root: {
+                            backgroundColor: tagColor,
+                            color: isDarkText ? '#000000' : '#FFFFFF',
+                          }
+                        })}
+                      >
+                        {tag}
+                      </Badge>
+                    );
+                  })}
+                </Group>
+              </Box>
             </Box>
           </Stack>
         </Paper>
