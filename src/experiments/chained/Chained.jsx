@@ -6,7 +6,7 @@ const Chained = () => {
   const [isRunning, setIsRunning] = useState(true);
   
   // Increased spacing between stars for gear-like appearance
-  const [linkLength, setLinkLength] = useState(40);
+  const [linkLength, setLinkLength] = useState(50); // Increased from 40 to 50
   const [elasticity, setElasticity] = useState(0.6);
   const [friction, setFriction] = useState(0.95);
   const [gravity, setGravity] = useState(0.2);
@@ -24,14 +24,14 @@ const Chained = () => {
         this.dragging = false;
         this.gradientOffset = 0;
         
-        // Pastel colors for gradient
-        this.pastelColors = [
-          { r: 255, g: 182, b: 193 }, // Pink
-          { r: 255, g: 218, b: 185 }, // Peach
-          { r: 255, g: 250, b: 205 }, // Lemon
-          { r: 193, g: 255, b: 193 }, // Mint
-          { r: 173, g: 216, b: 230 }, // Light blue
-          { r: 221, g: 160, b: 221 }  // Plum
+        // Bioluminescent colors for gradient
+        this.bioluminescentColors = [
+          { r: 0, g: 51, b: 102 },   // Deep Blue
+          { r: 0, g: 119, b: 204 },  // Ocean Blue
+          { r: 0, g: 255, b: 255 },  // Cyan
+          { r: 51, g: 255, b: 153 }, // Bright Green
+          { r: 153, g: 255, b: 204 }, // Seafoam Green
+          { r: 0, g: 119, b: 204 }   // Back to Ocean Blue for smooth loop
         ];
         
         // Create links with reasonable sizes - slightly larger for gears
@@ -68,12 +68,12 @@ const Chained = () => {
         const normPos = (position + offset) % 1;
         
         // Calculate which two colors to interpolate between
-        const colorsCount = this.pastelColors.length;
+        const colorsCount = this.bioluminescentColors.length;
         const idx1 = Math.floor(normPos * colorsCount);
         const idx2 = (idx1 + 1) % colorsCount;
         
-        const color1 = this.pastelColors[idx1];
-        const color2 = this.pastelColors[idx2];
+        const color1 = this.bioluminescentColors[idx1];
+        const color2 = this.bioluminescentColors[idx2];
         
         // Calculate blend factor between the two colors
         const blendFactor = (normPos * colorsCount) % 1;
@@ -216,19 +216,22 @@ const Chained = () => {
       }
       
       // Simplified drawing function without the blur effect
-      draw(ctx) {
-        // Clear canvas
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        
-        // Draw the chain
-        this.drawChain(ctx);
-      }
+      // draw(ctx) { // Remove this method or ensure it doesn't clear
+      //   // Clear canvas - REMOVE THIS LINE
+      //   // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      //   
+      //   // Draw the chain
+      //   this.drawChain(ctx);
+      // }
       
       // Helper method to draw the chain on a given context
       drawChain(ctx) {
         // Set up for additive blending to enhance glow effect
         ctx.globalCompositeOperation = 'lighter';
-        
+
+        // Apply blur filter
+        ctx.filter = 'blur(8px)'; // Adjust the blur amount as needed
+
         // Draw each star only, no connecting line
         for (let i = 0; i < this.links.length; i++) {
           const link = this.links[i];
@@ -238,19 +241,26 @@ const Chained = () => {
           // Make head node more reactive to magnetic attraction
           const isHead = i === 0;
           const headScale = isHead && !this.dragging && this.isInMagneticRange ? 1.2 : 1.0;
+
+          // Calculate velocity magnitude for scaling
+          const velMag = Math.sqrt(link.vx * link.vx + link.vy * link.vy);
+          const velocityScaleFactor = 0.5; // Adjust this multiplier for sensitivity
+          const maxScaleIncrease = 0.5; // Maximum increase in size (e.g., 0.5 means max 150% size)
+          const scale = 1 + Math.min(velMag * velocityScaleFactor, maxScaleIncrease);
           
-          // Draw the star with its own rotation
+          // Draw the star with its own rotation and dynamic scale
           this.drawRotatingShape(
             ctx, 
             link.x, 
             link.y, 
-            link.radius * headScale, 
+            link.radius * scale * headScale, // Apply dynamic scale and head magnetic scale
             link.angle, // Use link's individual angle
             `rgba(${color.r}, ${color.g}, ${color.b}, 1.0)`
           );
         }
         
-        // Reset composite operation
+        // Reset filter and composite operation
+        ctx.filter = 'none';
         ctx.globalCompositeOperation = 'source-over';
       }
       
@@ -260,17 +270,17 @@ const Chained = () => {
         ctx.translate(x, y);
         ctx.rotate(angle);
         
-        // Draw a spiked circular star with many points
-        const spikes = 24; // Many points for gear-like appearance
+        // Draw a spiked circular star with slightly more points
+        const spikes = 8; // Increased points from 6 to 8
         const outerRadius = radius;
-        const innerRadius = radius * 0.35; // Deeper valleys for gear-like appearance
+        const innerRadius = radius * 0.75; // Keep inner radius for wheel/gear look
         
         ctx.beginPath();
         
         // Draw alternating points to create the star shape
         for (let i = 0; i < spikes * 2; i++) {
           const r = i % 2 === 0 ? outerRadius : innerRadius;
-          const a = (i / (spikes * 2)) * Math.PI * 2;
+          const a = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2; // Offset start angle
           const px = Math.cos(a) * r;
           const py = Math.sin(a) * r;
           
@@ -287,10 +297,10 @@ const Chained = () => {
         ctx.fillStyle = color;
         ctx.fill();
         
-        // Add a thin stroke to emphasize the gear teeth
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        // Remove the stroke for a cleaner look
+        // ctx.strokeStyle = color;
+        // ctx.lineWidth = 1;
+        // ctx.stroke();
         
         ctx.restore();
       }
@@ -335,8 +345,8 @@ const Chained = () => {
     window.addEventListener('resize', handleResize);
     handleResize();
     
-    // Create chain with reasonable number of segments
-    let chain = new Chain(canvas.width / 2, canvas.height * 0.2, 15, linkLength);
+    // Create chain with fewer segments (e.g., 8)
+    let chain = new Chain(canvas.width / 2, canvas.height * 0.2, 8, linkLength); // Reduced segments from 15 to 8
     
     // Mouse interaction
     let mouseX = 0;
@@ -385,6 +395,55 @@ const Chained = () => {
     // Animation loop with timestamp for delta time
     let lastTime = 0;
     let animationId;
+    let backgroundOffset = 0; // For background animation
+    
+    // Simple particle system for background
+    const particles = [];
+    const numParticles = 50;
+    for (let i = 0; i < numParticles; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1 + 0.5, // Small particles
+        speed: Math.random() * 0.2 + 0.1 // Slow drift
+      });
+    }
+
+    const drawDeepSeaBackground = (ctx, time) => {
+      // Animate background gradient offset slowly
+      backgroundOffset = (time * 0.005) % ctx.canvas.height; // Slow vertical shift
+
+      // Create a vertical gradient for the deep sea
+      const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+      gradient.addColorStop(0, '#00001a'); // Deepest blue/black
+      gradient.addColorStop(0.3, '#001f3f'); // Navy blue
+      gradient.addColorStop(0.7, '#003366'); // Darker blue
+      gradient.addColorStop(1, '#001f3f'); // Back to Navy blue
+
+      // Apply the gradient shifted by offset
+      ctx.save();
+      ctx.translate(0, backgroundOffset);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, -backgroundOffset, ctx.canvas.width, ctx.canvas.height);
+      ctx.translate(0, -ctx.canvas.height);
+      ctx.fillRect(0, -backgroundOffset, ctx.canvas.width, ctx.canvas.height);
+      ctx.restore();
+
+      // Draw faint particles (marine snow)
+      ctx.fillStyle = 'rgba(200, 220, 255, 0.1)'; // Faint light blue
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Update particle position (drift down)
+        p.y += p.speed;
+        if (p.y > ctx.canvas.height + p.radius) {
+          p.y = -p.radius;
+          p.x = Math.random() * ctx.canvas.width; // Reset x when wrapping
+        }
+      });
+    };
     
     const animate = (currentTime) => {
       if (!isRunning) return;
@@ -392,13 +451,20 @@ const Chained = () => {
       // Calculate delta time for smooth animation
       const deltaTime = lastTime ? (currentTime - lastTime) / 16.67 : 1;
       lastTime = currentTime;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw deep sea background first
+      drawDeepSeaBackground(ctx, currentTime);
       
       // Update chain physics
       chain.update(elasticity, friction, gravity, mouseX, mouseY, deltaTime);
       chain.constrain(canvas.width, canvas.height);
       
-      // Draw chain to canvas
-      chain.draw(ctx);
+      // Draw chain to canvas (no clear needed inside chain.draw)
+      // chain.draw(ctx); - Modify chain.draw to not clear
+      chain.drawChain(ctx); // Call drawChain directly
       
       // Request next frame
       animationId = requestAnimationFrame(animate);
