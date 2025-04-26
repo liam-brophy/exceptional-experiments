@@ -26,7 +26,7 @@ const experimentList = [
     description: 'A customizable pixel mirror effect.',
     component: PixelMirror,
     thumbnail: '/thumbnails/experiment2.png',
-    tags: ['mirror', 'generative'],
+    tags: ['generative'], // Removed 'mirror'
     createdAt: '2025-02-03',
   },
   {
@@ -86,7 +86,7 @@ const experimentList = [
     description: 'Users pick from an array of characters, and when selected they are rendered and movable in 3js',
     component: Letturn,
     thumbnail: '/thumbnails/Letturn.png', // Updated thumbnail path
-    tags: ['3d', 'typography', 'interactive'],
+    tags: ['typography', 'interactive'], // Removed '3d'
     createdAt: '2025-04-26', // Current date
   },
 ];
