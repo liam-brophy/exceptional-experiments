@@ -12,7 +12,7 @@ const ExperimentLayout = ({ title, description, Component }) => {
       <div className="experiment-background-canvas">
         <Component />
       </div>
-
+{/* Attempts build */}
       {/* Header positioned fixed on top */}
       <header className="experiment-header-overlay">
         <Link to="/" className="back-button">← Back to Experiments</Link>
