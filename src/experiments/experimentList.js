@@ -8,6 +8,8 @@ import Outliner from './outliner/Outliner';
 import Chained from './chained/Chained';
 import Letturn from './letturn/Letturn'; // Add import for the new component
 import Screened from './screened/Screened'; // Import the new Screened component
+import InTheEnd from './inTheEnd/InTheEnd'; // Import the new InTheEnd component
+import Puzzler from './puzzler/Puzzler'; // Import the new Puzzler component
 
 const experimentList = [
   {
@@ -97,7 +99,27 @@ const experimentList = [
     description: 'A full screen canvas with a warping effect based on mouse movement.',
     component: Screened,
     thumbnail: '/thumbnails/screened.png', // Placeholder, update if a specific thumbnail exists
-    tags: ['interactive', 'visual'],
+    tags: ['interactive'], // Removed 'visual'
+    createdAt: '2025-05-03', // Current date
+  },
+  {
+    id: 'in-the-end',
+    slug: 'in-the-end',
+    title: 'In the End',
+    description: 'Slowly fade and dissolve between images with blurs and a black background.',
+    component: InTheEnd,
+    thumbnail: '/thumbnails/in-the-end.png', // Placeholder, you need to create this thumbnail
+    tags: ['animation'], // Removed 'visual' and 'transition'
+    createdAt: '2025-05-03', // Current date
+  },
+  {
+    id: 'puzzler',
+    slug: 'puzzler',
+    title: 'Puzzler',
+    description: 'Upload an image, shatter it into puzzle pieces, and rebuild it by dragging pieces to their correct positions.',
+    component: Puzzler,
+    thumbnail: '/thumbnails/puzzler.png', // Using the placeholder thumbnail
+    tags: ['interactive'], // Removed 'game' tag
     createdAt: '2025-05-03', // Current date
   },
 ];
