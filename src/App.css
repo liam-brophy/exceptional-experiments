@@ -1,6 +1,6 @@
 #root {
   width: 100%;
-  margin: 0 auto;
+  /* margin: 0 auto; */ /* Remove auto margin */
   padding: 0;
   /* Allow content to flow naturally */
   overflow: visible;

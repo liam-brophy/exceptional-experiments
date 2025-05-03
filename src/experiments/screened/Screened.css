@@ -1,0 +1,31 @@
+.screened-experiment {
+  /* height: 100%; */ /* Remove parent-relative height */
+  /* width: 100%; */ /* Remove parent-relative width */
+  /* overflow: hidden; */ /* Not strictly needed with fixed */
+  /* position: relative; */ /* Change to fixed */
+  position: fixed; /* Position relative to the viewport */
+  top: 0;
+  left: 0;
+  width: 100vw; /* Full viewport width */
+  height: 100vh; /* Full viewport height */
+  z-index: 1000; /* Ensure it's on top (adjust if needed) */
+  /* cursor: url('/cursors/screened_cursor.png'), auto !important; */ /* Remove cursor from parent for now */
+}
+
+/* Target the canvas directly within the experiment container */
+.screened-experiment canvas {
+  /* Ensure cursor style is removed or commented out */
+  /* cursor: url('/cursors/screened_cursor.png'), auto !important; */
+  /* cursor: url('/cursors/toggle-cursor.png'), auto !important; */ /* Try the other custom cursor */
+  /* cursor: crosshair !important; */ /* Test with a standard cursor */
+}
+
+/* Controls removed */
+/* .controls { ... } */
+
+.canvas { /* This class might not be used anymore with three.js */
+  display: block;
+  width: 100%; /* Fill the fixed container */
+  height: 100%; /* Fill the fixed container */
+  background-color: var(--background-color);
+}

@@ -7,6 +7,7 @@ import TypeCaster from './typeCaster/TypeCaster';
 import Outliner from './outliner/Outliner';
 import Chained from './chained/Chained';
 import Letturn from './letturn/Letturn'; // Add import for the new component
+import Screened from './screened/Screened'; // Import the new Screened component
 
 const experimentList = [
   {
@@ -88,6 +89,16 @@ const experimentList = [
     thumbnail: '/thumbnails/Letturn.png', // Updated thumbnail path
     tags: ['typography', 'interactive'], // Removed '3d'
     createdAt: '2025-04-26', // Current date
+  },
+  {
+    id: 'screened',
+    slug: 'screened',
+    title: 'Screened',
+    description: 'A full screen canvas with a warping effect based on mouse movement.',
+    component: Screened,
+    thumbnail: '/thumbnails/screened.png', // Placeholder, update if a specific thumbnail exists
+    tags: ['interactive', 'visual'],
+    createdAt: '2025-05-03', // Current date
   },
 ];
 

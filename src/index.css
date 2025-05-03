@@ -86,6 +86,9 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   transition: background-color var(--transition-speed), color var(--transition-speed);
+  
+  /* Ensure consistent scrollbar appearance - change scroll to auto */
+  overflow-y: auto;
 }
 
 /* Make sure content can be scrolled */
@@ -103,7 +106,7 @@ body {
   transition: background-color var(--transition-speed), color var(--transition-speed);
   
   /* Ensure consistent scrollbar appearance */
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 /* src/pages/home/HomePage.css */
