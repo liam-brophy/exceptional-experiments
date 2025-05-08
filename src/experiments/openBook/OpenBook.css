@@ -7,6 +7,7 @@
   justify-content: center;
   gap: 1.5rem;
   background-color: #f8f8f8;
+  position: relative; /* Added to create positioning context for absolute elements */
 }
 
 .openbook-experiment .canvas-container {
@@ -22,35 +23,86 @@
 }
 
 .openbook-experiment .controls {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  padding: 0.5rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allows clicks to pass through to the canvas */
+  z-index: 100; /* High z-index to ensure buttons appear above the canvas */
 }
 
+/* Base styles for all buttons */
 .openbook-experiment button {
-  background-color: #333333;
+  background-color: rgba(51, 51, 51, 0.7); /* Semi-transparent background */
   color: white;
   border: none;
   border-radius: 30px;
   padding: 0.75rem 1.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: auto; /* Re-enable pointer events for buttons */
+}
+
+/* Previous page button (left side) */
+.openbook-experiment .previous-button {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 1rem 1.5rem;
+}
+
+/* Next page button (right side) */
+.openbook-experiment .next-button {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 1rem 1.5rem;
+}
+
+/* Reset button (center bottom) */
+.openbook-experiment .reset-button {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .openbook-experiment button:hover {
-  background-color: #555555;
+  background-color: rgba(85, 85, 85, 0.9);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.openbook-experiment .previous-button:hover,
+.openbook-experiment .next-button:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.openbook-experiment .reset-button:hover {
+  transform: translateX(-50%) translateY(-2px);
 }
 
 .openbook-experiment button:disabled {
-  background-color: #cccccc;
+  background-color: rgba(204, 204, 204, 0.5);
   cursor: not-allowed;
   box-shadow: none;
-  transform: none;
+}
+
+.openbook-experiment .previous-button:disabled,
+.openbook-experiment .next-button:disabled {
+  transform: translateY(-50%);
+  opacity: 0.3;
+}
+
+.openbook-experiment .reset-button:disabled {
+  transform: translateX(-50%);
+  opacity: 0.3;
 }
 
 .openbook-experiment .error-message {
@@ -62,8 +114,22 @@
   margin: 1rem 0;
 }
 
+.openbook-experiment .debug-info {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  z-index: 101;
+}
+
 @media (max-width: 768px) {
   .openbook-experiment .canvas-container {
     height: 60vh;
+  }
+  
+  .openbook-experiment .previous-button,
+  .openbook-experiment .next-button {
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
   }
 }

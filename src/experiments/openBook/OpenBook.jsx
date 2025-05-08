@@ -4,14 +4,20 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import gsap from 'gsap';
 import './OpenBook.css';
 
+// Constants for book dimensions and appearance
 const PAGE_WIDTH = 3;
 const PAGE_HEIGHT = 4.2;
 const PAGE_DEPTH = 0.01; // Small depth for visual separation and stacking offset
 const NUM_CONTENT_PAGES = 5; // Renamed from NUM_PAGES
 const COVER_THICKNESS = 0.05; // Thickness for front and back covers
-const SPINE_HINGE_WIDTH = 0.02; // Visual width of the spine element along X-axis at the hinge
-const COVER_COLOR = 0x5c3a21; // A brownish color for the cover
+const SPINE_HINGE_WIDTH = 0.15; // Visual width of the spine element along X-axis at the hinge (increased from 0.02)
+const COVER_COLOR = 0x5c3a21; // A brownish color for the cover (fallback if texture fails)
+const PAGE_COLOR = 0xfff9e6; // Creamy page color (fallback if texture fails)
 const Z_OFFSET_RIGHT = -0.05; // Z-offset to ensure pages appear in front of covers when on right side
+
+// Texture paths
+const COVER_TEXTURE_PATH = '/textures/cover_texture.jpg';
+const PAGE_TEXTURE_PATH = '/textures/page_texture.jpg';
 
 function OpenBookExperiment() {
     const mountRef = useRef(null);
@@ -94,15 +100,33 @@ function OpenBookExperiment() {
             scene.add(bookGroup);
             bookGroupRef.current = bookGroup; // Store ref to bookGroup
 
-            // Materials
+            // Texture loader
+            const textureLoader = new THREE.TextureLoader();
+            
+            // Load textures
+            const coverTexture = textureLoader.load(COVER_TEXTURE_PATH);
+            const pageTexture = textureLoader.load(PAGE_TEXTURE_PATH);
+            
+            // Configure textures
+            coverTexture.wrapS = coverTexture.wrapT = THREE.RepeatWrapping;
+            pageTexture.wrapS = pageTexture.wrapT = THREE.RepeatWrapping;
+            
+            // Set texture repeat to fit the cover and pages properly
+            coverTexture.repeat.set(1, 1);
+            pageTexture.repeat.set(1, 1);
+            
+            // Materials with textures
             const pageMaterial = new THREE.MeshStandardMaterial({
-                color: 0xfff9e6, // Creamy page color
+                color: PAGE_COLOR, // Base color that will be multiplied with the texture
+                map: pageTexture,
                 side: THREE.DoubleSide,
                 roughness: 0.8,
                 metalness: 0.0,
             });
+            
             const coverMaterial = new THREE.MeshStandardMaterial({
-                color: COVER_COLOR,
+                color: 0xffffff, // Using white as base to let the texture color show through
+                map: coverTexture,
                 side: THREE.DoubleSide,
                 roughness: 0.7,
                 metalness: 0.1,
@@ -242,7 +266,6 @@ function OpenBookExperiment() {
     // --- Page Turning Functions ---
 
     const turnPage = useCallback((direction, onTurnCompleteCallback) => {
-        console.log(`[turnPage] Initiating turn. Direction: ${direction}, Current Page Before Turn: ${currentPageRef.current}`);
         const pageMeshes = pagesRef.current;
         const bookGroup = bookGroupRef.current;
         if (!bookGroup) return;
@@ -263,8 +286,6 @@ function OpenBookExperiment() {
             pivotTargetRotationY = -Math.PI;  // Negative PI for clockwise rotation
             finalPagePositionX = PAGE_WIDTH / 2;    
             finalPageRotationY = 0;  
-            
-            console.log(`[turnPage] Forward: Turning ${pageToTurnMesh?.name}. IsCover: ${isCover}. Pivot: ${pivotInitialRotationY} -> ${pivotTargetRotationY}. Final X: ${finalPagePositionX}, Final RotY: ${finalPageRotationY}`);
         } else if (direction === 'backward' && currentPageRef.current > 0) {
             pageToTurnMesh = pageMeshes[currentPageRef.current - 1];
             // Check if we're turning the back cover
@@ -274,92 +295,76 @@ function OpenBookExperiment() {
             pivotTargetRotationY = 0;
             finalPagePositionX = -PAGE_WIDTH / 2;   
             finalPageRotationY = Math.PI;  
-            
-            console.log(`[turnPage] Backward: Turning ${pageToTurnMesh?.name}. IsCover: ${isCover}. Pivot: ${pivotInitialRotationY} -> ${pivotTargetRotationY}. Final X: ${finalPagePositionX}, Final RotY: ${finalPageRotationY}`);
         } else {
             setIsPageTurning(false);
-            console.log('[turnPage] Invalid turn condition or already at limit.');
             return;
         }
 
         if (!pageToTurnMesh) {
-            console.error('Page to turn not found');
             setIsPageTurning(false);
             return;
         }
 
         const originalPageZ = pageToTurnMesh.position.z;
         
-        // Create a pivot that will be the animation root
-        const pivot = new THREE.Object3D();
-        pivot.position.set(0, 0, originalPageZ); // Pivot at spine, at page's depth
-        bookGroup.add(pivot);
+        // Create a pivot for the page turning animation (at the spine)
+        const pagePivot = new THREE.Object3D();
+        pagePivot.position.set(0, 0, originalPageZ); // Position at the spine
+        bookGroup.add(pagePivot);
         
-        // Remove the page from bookGroup and add to pivot
+        // Remove page from book group temporarily
         bookGroup.remove(pageToTurnMesh);
-        pivot.add(pageToTurnMesh);
         
-        // Set its position and rotation relative to pivot
-        if (direction === 'forward') {
-            pageToTurnMesh.position.set(-PAGE_WIDTH / 2, 0, 0);
-            pageToTurnMesh.rotation.set(0, Math.PI, 0); // Front of page faces towards camera
-        } else { // backward
-            pageToTurnMesh.position.set(PAGE_WIDTH / 2, 0, 0);
-            pageToTurnMesh.rotation.set(0, 0, 0); // Front of page faces away from camera for backward turns
-        }
+        // Add to pivot
+        pagePivot.add(pageToTurnMesh);
         
-        // Now set the pivot's initial rotation before animation
-        pivot.rotation.y = pivotInitialRotationY;
-
-        console.log(`[turnPage] Starting animation: pageToTurnMesh position=${JSON.stringify(pageToTurnMesh.position)} rotation=${JSON.stringify(pageToTurnMesh.rotation)}`);
+        // Position page relative to pivot
+        pageToTurnMesh.position.set(direction === 'forward' ? -PAGE_WIDTH / 2 : PAGE_WIDTH / 2, 0, 0);
+        pageToTurnMesh.rotation.y = direction === 'forward' ? Math.PI : 0;
         
-        gsap.to(pivot.rotation, {
-            duration: 2, 
+        // Animate the page rotation
+        gsap.to(pagePivot.rotation, {
+            duration: 1.2,
             y: pivotTargetRotationY,
             ease: "power2.inOut",
-            onUpdate: () => {
-                // If you need to add special handling during animation, do it here
-                // This is useful for debugging or applying additional effects
-                // console.log(`[turnPage] Animation update: pivot.rotation.y=${pivot.rotation.y}`);
-            },
             onComplete: () => {
-                // Animation complete - reattach page to bookGroup and set final position/rotation
-                bookGroup.remove(pivot);
+                // Animation complete - restore the page to the book
+                pagePivot.remove(pageToTurnMesh);
+                bookGroup.remove(pagePivot);
                 bookGroup.add(pageToTurnMesh);
                 
-                // Set the final position and rotation in the bookGroup
-                // Adjust the z-position based on whether it's a cover or content page
-                // and whether it's on the left or right side
+                // Set final position and rotation
                 let finalZ = originalPageZ;
                 
-                // When a page is on the right side, adjust its z position to ensure visual layering
-                if (finalPagePositionX > 0) { // Right side (after forward turn)
-                    if (isCover) {
-                        // Covers should be behind content pages when on the right side
-                        // No additional Z offset needed, the page indices already handle this
-                    } else {
-                        // Content pages should be in front of covers when on the right side
-                        finalZ += Z_OFFSET_RIGHT; // This brings the page forward (negative z is towards camera)
-                    }
+                // When a page is on the right side, adjust z position if needed
+                if (finalPagePositionX > 0 && !isCover) { // Right side (after forward turn)
+                    // Content pages should be in front of covers when on the right side
+                    finalZ += Z_OFFSET_RIGHT;
                 }
                 
                 pageToTurnMesh.position.set(finalPagePositionX, 0, finalZ);
                 pageToTurnMesh.rotation.y = finalPageRotationY;
                 
-                // The page is now in its final resting position
-                console.log(`[turnPage] Animation complete: page is now at X=${finalPagePositionX}, Z=${finalZ}, rotY=${finalPageRotationY}`);
-
-                setCurrentPage(prev => {
-                    const newPage = direction === 'forward' ? prev + 1 : prev - 1;
-                    console.log(`[turnPage] Updating currentPage from ${prev} to ${newPage}`);
-                    return newPage;
+                // Add a very subtle settle animation
+                gsap.to(pageToTurnMesh.rotation, {
+                    duration: 0.2,
+                    z: 0.01, // Very slight tilt
+                    ease: "elastic.out(1.5, 0.3)",
+                    yoyo: true,
+                    repeat: 1,
+                    onComplete: () => {
+                        setCurrentPage(prev => {
+                            const newPage = direction === 'forward' ? prev + 1 : prev - 1;
+                            return newPage;
+                        });
+                        
+                        setIsPageTurning(false);
+                        
+                        if (onTurnCompleteCallback) {
+                            onTurnCompleteCallback();
+                        }
+                    }
                 });
-                
-                setIsPageTurning(false);
-
-                if (onTurnCompleteCallback) {
-                    onTurnCompleteCallback();
-                }
             }
         });
     }, [setCurrentPage, setIsPageTurning, pagesRef, currentPageRef, bookGroupRef]);
@@ -486,32 +491,27 @@ function OpenBookExperiment() {
         <div className="openbook-experiment">
             <div className="canvas-container" ref={mountRef} />
             <div className="controls">
-                <button onClick={() => {
-                    if (cameraRef.current && controlsRef.current) {
-                        const camPos = cameraRef.current.position;
-                        const targetPos = controlsRef.current.target;
-                        console.log(`[Camera View] Position: X=${camPos.x.toFixed(2)}, Y=${camPos.y.toFixed(2)}, Z=${camPos.z.toFixed(2)} | Target: X=${targetPos.x.toFixed(2)}, Y=${targetPos.y.toFixed(2)}, Z=${targetPos.z.toFixed(2)}`);
-                    }
-                }}>Log Camera View</button>
-
                 {currentPage > 0 && !isResetting && (
                     <button 
+                        className="page-button previous-button"
                         onClick={handlePreviousPage}
                         disabled={isPageTurning || isResetting}>
-                        Previous Page
+                        ←
                     </button>
                 )}
                 
                 {currentPage < NUM_CONTENT_PAGES + 1 && !isResetting && (
                     <button 
+                        className="page-button next-button"
                         onClick={handleNextPage}
                         disabled={isPageTurning || isResetting}>
-                        Next Page
+                        →
                     </button>
                 )}
                 
                 {currentPage === NUM_CONTENT_PAGES + 1 && (
                     <button 
+                        className="reset-button"
                         onClick={handleGoToFirstPage}
                         disabled={isPageTurning || isResetting}>
                         {isResetting ? 'Resetting...' : 'Go to Front Cover'}
