@@ -10,6 +10,8 @@ import Letturn from './letturn/Letturn'; // Add import for the new component
 import Screened from './screened/Screened'; // Import the new Screened component
 import InTheEnd from './inTheEnd/InTheEnd'; // Import the new InTheEnd component
 import Puzzler from './puzzler/Puzzler'; // Import the new Puzzler component
+import PixelType from './pixelType/PixelType'; // Import the new PixelType component
+import OpenBookExperiment from './openBook/OpenBook'; // Import the new OpenBook component
 
 const experimentList = [
   {
@@ -121,6 +123,26 @@ const experimentList = [
     thumbnail: '/thumbnails/puzzler.png', // Using the placeholder thumbnail
     tags: ['interactive'], // Removed 'game' tag
     createdAt: '2025-05-03', // Current date
+  },
+  {
+    id: 'pixel-type',
+    slug: 'pixel-type',
+    title: 'Pixel Type',
+    description: 'Type sentences and watch them appear in a stylish pixel font with subtle animations.',
+    component: PixelType,
+    thumbnail: '/thumbnails/pixelType.png', // We'll create a placeholder later
+    tags: ['typography', 'animation', 'interactive'],
+    createdAt: '2025-05-06', // Current date
+  },
+  {
+    id: 'open-book',
+    slug: 'open-book',
+    title: 'Open Book',
+    description: 'Interactive 3D book with animated page turning effect using Three.js.',
+    component: OpenBookExperiment,
+    thumbnail: '/thumbnails/open-book.png',
+    tags: ['animation', 'interactive', '3d'],
+    createdAt: '2025-05-08', // Today's date
   },
 ];
 

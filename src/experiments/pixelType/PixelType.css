@@ -1,0 +1,221 @@
+.pixel-type-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  color: #fff;
+  overflow: hidden;
+  font-family: monospace;
+}
+
+.input-area {
+  position: absolute;
+  bottom: 60px;
+  width: 80%;
+  max-width: 600px;
+  z-index: 10;
+}
+
+.text-input {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  background-color: rgba(30, 30, 30, 0.7);
+  border: 2px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #00bbff;
+  box-shadow: 0 0 15px rgba(0, 187, 255, 0.4);
+}
+
+.display-area {
+  width: 90%;
+  max-width: 1000px;
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  perspective: 1000px;
+}
+
+.pixel-text {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  position: relative;
+  color: transparent;
+  font-size: 0;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pixel-character {
+  display: inline-block;
+  position: relative;
+  margin: 0 4px;
+  opacity: 1;
+  transform: scale(1);
+  animation: appear 0.6s forwards cubic-bezier(0.2, 0.8, 0.2, 1.2);
+  transform-style: preserve-3d;
+  color: #f5f5f5; /* Off-white color for all characters */
+}
+
+.pixel-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 4px);
+  grid-template-rows: repeat(7, 4px);
+  gap: 1px;
+  width: 25px;
+  height: 35px;
+  transform-style: preserve-3d;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pixel-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 0;
+  transform: scale(0) rotate(0deg);
+  animation: pixel-appear 0.5s forwards cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pixel-dot.filled {
+  background-color: currentColor;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+  animation: pixel-appear 0.5s forwards cubic-bezier(0.34, 1.56, 0.64, 1), 
+             pixel-pulse 2s infinite alternate-reverse ease-in-out;
+}
+
+.pixel-dot.empty {
+  background-color: transparent;
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(20px) rotateX(30deg);
+  }
+  60% {
+    transform: scale(1.3) translateY(-5px) rotateX(-10deg);
+  }
+  80% {
+    transform: scale(0.9) translateY(2px) rotateX(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotateX(0deg);
+  }
+}
+
+@keyframes pixel-appear {
+  0% {
+    transform: scale(0) rotate(-45deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes pixel-pulse {
+  0% {
+    transform: scale(0.8);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+  }
+}
+
+.instructions {
+  position: absolute;
+  top: 20px;
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  z-index: 10;
+}
+
+/* Simplified color palette with more dramatic colors */
+.color-primary { 
+  color: #00f7ff; 
+  animation: color-shift-primary 8s infinite alternate;
+}
+
+.color-secondary { 
+  color: #ff00e6; 
+  animation: color-shift-secondary 8s infinite alternate;
+}
+
+/* Color shifting animations */
+@keyframes color-shift-primary {
+  0% { color: #00f7ff; }
+  33% { color: #00ffaa; }
+  66% { color: #00c3ff; }
+  100% { color: #00f7ff; }
+}
+
+@keyframes color-shift-secondary {
+  0% { color: #ff00e6; }
+  33% { color: #ff2a6d; }
+  66% { color: #d400ff; }
+  100% { color: #ff00e6; }
+}
+
+/* Style button - moved further down on the right side */
+.style-button {
+  position: absolute;
+  top: 80px; /* Moved further down from the top */
+  right: 20px;
+  padding: 10px 20px;
+  background-color: rgba(30, 30, 30, 0.7);
+  color: #f5f5f5;
+  border: 2px solid #444;
+  border-radius: 4px;
+  font-family: monospace;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.style-button:hover {
+  background-color: rgba(50, 50, 50, 0.8);
+  border-color: #666;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+/* Alternative font styles */
+.style-alt .pixel-grid {
+  transform: rotate(45deg);
+}
+
+.style-alt2 .pixel-grid {
+  transform: skew(10deg, 10deg);
+}
+
+.style-alt3 .pixel-dot.filled {
+  border-radius: 50%;
+}
+
+.style-alt4 .pixel-grid {
+  transform: perspective(200px) rotateX(30deg);
+}
