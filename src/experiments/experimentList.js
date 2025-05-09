@@ -141,7 +141,7 @@ const experimentList = [
     description: 'Interactive 3D book with animated page turning effect using Three.js.',
     component: OpenBookExperiment,
     thumbnail: '/thumbnails/open-book.png',
-    tags: ['animation', 'interactive', '3d'],
+    tags: ['animation', 'interactive'],
     createdAt: '2025-05-08', // Today's date
   },
 ];
