@@ -8,7 +8,7 @@ import Outliner from './outliner/Outliner';
 import Chained from './chained/Chained';
 import Letturn from './letturn/Letturn'; // Add import for the new component
 import Screened from './screened/Screened'; // Import the new Screened component
-import InTheEnd from './inTheEnd/InTheEnd'; // Import the new InTheEnd component
+import InTheEnd from './intheend/InTheEnd.jsx'; // Import the new InTheEnd component
 import Puzzler from './puzzler/Puzzler'; // Import the new Puzzler component
 import PixelType from './pixelType/PixelType'; // Import the new PixelType component
 import OpenBookExperiment from './openBook/OpenBook'; // Import the new OpenBook component
