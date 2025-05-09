@@ -15,9 +15,17 @@ const COVER_COLOR = 0x5c3a21; // A brownish color for the cover (fallback if tex
 const PAGE_COLOR = 0xfff9e6; // Creamy page color (fallback if texture fails)
 const Z_OFFSET_RIGHT = -0.05; // Z-offset to ensure pages appear in front of covers when on right side
 
+// Orbiting orb constants
+const ORB_RADIUS = 0.2;
+// Removing blue color
+// const ORB_COLOR = 0x00ffff;
+const ORB_ORBIT_RADIUS = 4;
+const ORB_ORBIT_SPEED = 0.5;
+
 // Texture paths
 const COVER_TEXTURE_PATH = '/textures/cover_texture.jpg';
 const PAGE_TEXTURE_PATH = '/textures/page_texture.jpg';
+const ORB_TEXTURE_PATH = '/textures/orbit-texture.avif';
 
 function OpenBookExperiment() {
     const mountRef = useRef(null);
@@ -28,6 +36,8 @@ function OpenBookExperiment() {
     const animationFrameRef = useRef(null);
     const pagesRef = useRef([]); // To store page meshes (covers and content pages)
     const bookGroupRef = useRef(null); // Ref for the main book group
+    const orbRef = useRef(null); // Reference to the orbiting orb
+    const orbAngleRef = useRef(0); // Current angle for the orb's orbit
 
     const [currentPage, setCurrentPage] = useState(0); // 0-indexed: 0 for front cover, 1 to N for content, N+1 for back cover
     const currentPageRef = useRef(currentPage); // Ref for currentPage
@@ -106,6 +116,7 @@ function OpenBookExperiment() {
             // Load textures
             const coverTexture = textureLoader.load(COVER_TEXTURE_PATH);
             const pageTexture = textureLoader.load(PAGE_TEXTURE_PATH);
+            const orbTexture = textureLoader.load(ORB_TEXTURE_PATH);
             
             // Configure textures
             coverTexture.wrapS = coverTexture.wrapT = THREE.RepeatWrapping;
@@ -183,11 +194,55 @@ function OpenBookExperiment() {
             spineMesh.receiveShadow = true;
             bookGroupRef.current.add(spineMesh); // Add spine to bookGroup via ref
             
+            // Create orbiting orb
+            const orbGeometry = new THREE.SphereGeometry(ORB_RADIUS, 16, 16);
+            const orbMaterial = new THREE.MeshStandardMaterial({
+                // Removing blue color references
+                // color: ORB_COLOR,
+                // emissive: ORB_COLOR,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.8,
+                map: orbTexture
+            });
+            
+            const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+            orb.position.set(ORB_ORBIT_RADIUS, 0, 0); // Start at a point on the orbit
+            orb.castShadow = true;
+            scene.add(orb);
+            orbRef.current = orb;
+            
+            // Add rotation to the orb itself for a spinning effect
+            gsap.to(orb.rotation, {
+                x: Math.PI * 2,
+                y: Math.PI * 2,
+                duration: 10,
+                ease: "none",
+                repeat: -1
+            });
+            
+            // Add a point light to the orb
+            const orbLight = new THREE.PointLight(0xffffff, 1, 5); // Changed from ORB_COLOR to white
+            orbLight.position.set(0, 0, 0); // Light positioned at center of orb
+            orb.add(orbLight); // Add light as child of orb
+            
             // setCurrentPage(0); // Already initialized with useState(0)
 
             // Animation Loop
             const animate = () => {
                 animationFrameRef.current = requestAnimationFrame(animate);
+                
+                // Update orb position - orbit around the book
+                if (orbRef.current) {
+                    orbAngleRef.current += ORB_ORBIT_SPEED * 0.01;
+                    const x = Math.cos(orbAngleRef.current) * ORB_ORBIT_RADIUS;
+                    const z = Math.sin(orbAngleRef.current) * ORB_ORBIT_RADIUS;
+                    orbRef.current.position.set(x, 0, z);
+                    
+                    // Add subtle bobbing up and down motion
+                    orbRef.current.position.y = Math.sin(orbAngleRef.current * 2) * 0.5;
+                }
+                
                 controls.update();
                 renderer.render(scene, camera);
             };
@@ -222,6 +277,13 @@ function OpenBookExperiment() {
                     if (page.parent) page.parent.remove(page);
                 });
                 pagesRef.current = []; // Clear the array
+                
+                // Dispose of orb
+                if (orbRef.current) {
+                    if (orbRef.current.geometry) orbRef.current.geometry.dispose();
+                    if (orbRef.current.material) orbRef.current.material.dispose();
+                    if (orbRef.current.parent) orbRef.current.parent.remove(orbRef.current);
+                }
 
                 // Dispose of other scene objects (lights, etc.) if they were added directly to the scene
                 // and remove them from the scene.

@@ -130,7 +130,7 @@ const experimentList = [
     title: 'Pixel Type',
     description: 'Type sentences and watch them appear in a stylish pixel font with subtle animations.',
     component: PixelType,
-    thumbnail: '/thumbnails/pixelType.png', // We'll create a placeholder later
+    thumbnail: '/thumbnails/pixel-type.png', // We'll create a placeholder later
     tags: ['typography', 'animation', 'interactive'],
     createdAt: '2025-05-06', // Current date
   },
