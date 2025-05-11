@@ -152,7 +152,7 @@ const experimentList = [
     description: 'A reading interface with neo-brutalist design principles featuring bold borders, minimalist aesthetics, and interactive controls.',
     component: NeoBrutalistReader,
     thumbnail: '/thumbnails/neo-brutalist-reader.png', // You'll need to create this thumbnail
-    tags: ['typography', 'interactive', 'design'],
+    tags: ['typography', 'interactive'],
     createdAt: '2025-05-11', // Today's date
   },
 ];
