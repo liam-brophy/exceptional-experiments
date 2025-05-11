@@ -21,9 +21,21 @@
   height: 100%; /* Full height */
   z-index: 1;    /* Behind header/footer */
   background-color: var(--background-color); /* Use theme variable */
-  /* Ensure child (Experiment1) can fill it */
+  /* Ensure child (Experiment) can fill it */
   display: flex; /* Use flex to make child fill */
   overflow: auto; /* Allow scrolling within the canvas */
+}
+
+.experiment-content-container {
+  /* Full size container for the actual experiment content */
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  z-index: 1;    /* Behind header/footer */
+  background-color: var(--background-color); /* Use theme variable */
+  /* Extra padding to ensure content is visible below fixed header and above fixed footer */
+  padding-top: 60px;
+  padding-bottom: 40px;
 }
 
 .experiment-header-overlay {
@@ -80,7 +92,7 @@
 }
 
 /* Improved theme compatibility for experiment pages */
-[data-theme="dark"] .experiment-background-canvas {
+[data-theme="dark"] .experiment-content-container {
   background-color: var(--background-color);
 }
 

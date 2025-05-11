@@ -1,0 +1,301 @@
+/* Neo Brutalist Reader Styles */
+.neo-brutalist-reader-experiment {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 40px;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+.neo-brutalist-container {
+  width: 100%;
+  max-width: 1200px;
+  max-height: calc(100vh - 160px); /* Ensure it doesn't extend to header/footer */
+  background-color: var(--theme-color, #FFFFFF);
+  color: var(--text-color, #000000);
+  border: 5px solid #000000;
+  box-shadow: 10px 10px 0px #000000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Dark mode styles */
+.neo-brutalist-container.dark-mode {
+  background-color: #000000;
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+  box-shadow: 10px 10px 0px #FFFFFF;
+}
+
+.neo-brutalist-container.dark-mode .neo-sidebar {
+  background-color: #222222;
+  border-color: #FFFFFF;
+}
+
+.neo-brutalist-container.dark-mode .reading-area {
+  background-color: #111111;
+  border-color: #FFFFFF;
+}
+
+/* Header styles */
+.neo-header {
+  padding: 24px;
+  border-bottom: 5px solid #000000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.neo-brutalist-container.dark-mode .neo-header {
+  border-bottom-color: #FFFFFF;
+}
+
+.neo-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Color picker styles */
+.color-picker-container {
+  display: flex;
+  align-items: center;
+}
+
+.color-picker {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #000000;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+.neo-brutalist-container.dark-mode .color-picker {
+  border-color: #FFFFFF;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.color-picker-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Button styles */
+.neo-button {
+  padding: 8px 16px;
+  background-color: #FFFFFF;
+  color: #000000;
+  border: 3px solid #000000;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.neo-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.neo-button.active {
+  color: #FFFFFF;
+}
+
+.neo-brutalist-container.dark-mode .neo-button {
+  border-color: #FFFFFF;
+}
+
+.neo-brutalist-container.dark-mode .neo-button:hover {
+  box-shadow: 4px 4px 0px #FFFFFF;
+}
+
+/* Toggle sidebar button */
+.toggle-sidebar {
+  padding: 8px;
+  min-width: 36px;
+}
+
+.toggle-sidebar.show {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
+/* Layout styles */
+.neo-reader-layout {
+  display: flex;
+  padding: 24px;
+  flex: 1;
+  overflow: auto;
+  gap: 24px;
+  max-height: calc(100vh - 260px); /* Control max height to avoid overflow */
+}
+
+/* Sidebar styles */
+.neo-sidebar {
+  width: 320px;
+  min-width: 280px;
+  padding: 24px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 5px solid #000000;
+  border-radius: 0;
+  position: relative;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  height: fit-content;
+  max-height: calc(100vh - 280px);
+}
+
+.neo-brutalist-container.dark-mode .neo-sidebar {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #FFFFFF;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+
+/* Control section styles */
+.control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.control-group h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.neo-buttons-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Slider styles */
+.neo-slider-container {
+  padding: 0 8px;
+}
+
+.neo-slider {
+  width: 100%;
+  height: 24px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  border: 3px solid #000000;
+  padding: 0;
+}
+
+.neo-brutalist-container.dark-mode .neo-slider {
+  border-color: #FFFFFF;
+}
+
+.neo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #000000;
+  cursor: pointer;
+  border: 3px solid #000000;
+}
+
+.neo-brutalist-container.dark-mode .neo-slider::-webkit-slider-thumb {
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+.neo-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #000000;
+  cursor: pointer;
+  border: 3px solid #000000;
+}
+
+.neo-brutalist-container.dark-mode .neo-slider::-moz-range-thumb {
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+/* Content area styles */
+.neo-content {
+  flex-grow: 1;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.reading-area {
+  padding: 32px;
+  background-color: var(--theme-color, #FFFFFF);
+  border: 5px solid #000000;
+  height: calc(100vh - 280px);
+  max-height: calc(100vh - 280px);
+  white-space: pre-line;
+  overflow-y: auto;
+  font-family: 'Inter', sans-serif;
+  text-align: justify;
+}
+
+.neo-brutalist-container.dark-mode .reading-area {
+  background-color: #000000;
+  border-color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+  .neo-brutalist-reader-experiment {
+    padding: 60px 20px;
+  }
+  
+  .neo-reader-layout {
+    flex-direction: column;
+    max-height: none;
+  }
+  
+  .neo-sidebar {
+    width: 100%;
+    max-width: 100%;
+    max-height: 40vh;
+    overflow-y: auto;
+    margin-bottom: 24px;
+  }
+  
+  .reading-area {
+    height: 40vh;
+    max-height: 40vh;
+  }
+  
+  .header-controls {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}

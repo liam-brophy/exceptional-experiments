@@ -6,12 +6,13 @@ import MagicCrayon from './magicCrayon/MagicCrayon';
 import TypeCaster from './typeCaster/TypeCaster';
 import Outliner from './outliner/Outliner';
 import Chained from './chained/Chained';
-import Letturn from './letturn/Letturn'; // Add import for the new component
-import Screened from './screened/Screened'; // Import the new Screened component
-import InTheEnd from './intheend/InTheEnd'; // Fixed import path by removing .jsx extension
-import Puzzler from './puzzler/Puzzler'; // Import the new Puzzler component
-import PixelType from './pixelType/PixelType'; // Import the new PixelType component
-import OpenBookExperiment from './openBook/OpenBook'; // Import the new OpenBook component
+import Letturn from './letturn/Letturn'; 
+import Screened from './screened/Screened';
+import InTheEnd from './intheend/InTheEnd';
+import Puzzler from './puzzler/Puzzler';
+import PixelType from './pixelType/PixelType';
+import OpenBookExperiment from './openBook/OpenBook';
+import NeoBrutalistReader from './neoBrutalistReader/NeoBrutalistReader'; // Import the new NeoBrutalistReader component
 
 const experimentList = [
   {
@@ -143,6 +144,16 @@ const experimentList = [
     thumbnail: '/thumbnails/open-book.png',
     tags: ['animation', 'interactive'],
     createdAt: '2025-05-08', // Today's date
+  },
+  {
+    id: 'neo-brutalist-reader',
+    slug: 'neo-brutalist-reader',
+    title: 'Neo Brutalist Reader',
+    description: 'A reading interface with neo-brutalist design principles featuring bold borders, minimalist aesthetics, and interactive controls.',
+    component: NeoBrutalistReader,
+    thumbnail: '/thumbnails/neo-brutalist-reader.png', // You'll need to create this thumbnail
+    tags: ['typography', 'interactive', 'design'],
+    createdAt: '2025-05-11', // Today's date
   },
 ];
 
